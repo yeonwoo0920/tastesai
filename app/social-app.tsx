@@ -19,10 +19,10 @@ const categories = [
 ] as const;
 
 const communities = [
-  { name: "이번 분기 애니 정주행", cat: "애니메이션", members: "12.4K", desc: "이번 분기 신작을 같이 보고 감상을 나눠요.", color: "linear-gradient(135deg,#5b7cfa,#8cb8ff)", joined: true },
-  { name: "매일 20분 독서", cat: "독서", members: "8.1K", desc: "짧아도 꾸준하게. 오늘 읽은 문장을 기록해요.", color: "linear-gradient(135deg,#21a179,#8bd3bb)", joined: true },
-  { name: "퇴근 후 한 장", cat: "사진", members: "5.6K", desc: "평범한 하루에서 발견한 장면을 공유해요.", color: "linear-gradient(135deg,#ef8354,#ffd166)", joined: false },
-  { name: "인디게임 발견대", cat: "PC 게임", members: "3.2K", desc: "숨은 게임을 찾아 플레이 기록을 남겨요.", color: "linear-gradient(135deg,#7357ff,#d099ff)", joined: false },
+  { name: "이번 분기 애니 정주행", cat: "애니메이션", members: "12.4K", desc: "이번 분기 신작을 같이 보고 감상을 나눠요.", color: "#4f6fd8", joined: true },
+  { name: "매일 20분 독서", cat: "독서", members: "8.1K", desc: "짧아도 꾸준하게. 오늘 읽은 문장을 기록해요.", color: "#298567", joined: true },
+  { name: "퇴근 후 한 장", cat: "사진", members: "5.6K", desc: "평범한 하루에서 발견한 장면을 공유해요.", color: "#c86b43", joined: false },
+  { name: "인디게임 발견대", cat: "PC 게임", members: "3.2K", desc: "숨은 게임을 찾아 플레이 기록을 남겨요.", color: "#6658b5", joined: false },
 ];
 
 const seedPosts: Post[] = [
@@ -111,7 +111,7 @@ function IconNav({id,label,icon:Icon,count,active,onClick}:{id:View,label:string
 function Avatar({text,size="md"}:{text:string,size?:"sm"|"md"|"lg"}) { return <span className={`avatar ${size}`}>{text.slice(0,1)}</span>; }
 
 function CommunityHome({user,posts,feed,setFeed,setView,openBoard,openProfile,togglePost,requireLogin,joined,join}:{user:Viewer;posts:Post[];feed:string;setFeed:(x:string)=>void;setView:(v:View)=>void;openBoard:(name:string)=>void;openProfile:(name:string)=>void;togglePost:(id:string,k:"liked"|"saved")=>void;requireLogin:(f:()=>void)=>void;joined:string[];join:(name:string)=>void}) {
-  const suggestions=[communities[2],communities[3],{name:"야구 직관 기록방",cat:"야구",members:"2.8K",desc:"오늘의 직관 사진과 응원 기록을 남겨요.",color:"linear-gradient(135deg,#1456b8,#6aa9ff)",joined:false}];
+  const suggestions=[communities[2],communities[3],{name:"야구 직관 기록방",cat:"야구",members:"2.8K",desc:"오늘의 직관 사진과 응원 기록을 남겨요.",color:"#3368a8",joined:false}];
   return <div className="community-home">
     <section className="home-intro"><div><span className="eyebrow">MY TASTE, MY PEOPLE</span><h1>{user?`${user.name}님의 취향이 머무는 곳`:"좋아하는 것을 함께 오래 좋아해요"}</h1><p>작은 취미 커뮤니티에서 기록을 남기고, 마음이 맞는 사람을 만나보세요.</p></div><button className="outline" onClick={()=>setView("discover")}><Compass/> 새 커뮤니티 찾기</button></section>
     <section className="my-community-zone"><div className="zone-title"><div><h2>내 커뮤니티</h2><span>자주 찾는 사람들과 오늘의 새 소식</span></div><button onClick={()=>setView("mine")}>전체 보기 <ChevronRight/></button></div>{joined.length?<div className="my-community-cards">{joined.map((name,i)=><button key={name} onClick={()=>openBoard(name)}><span className={`community-emblem e${i}`}>{name[0]}</span><span className="community-card-copy"><small>{i===0?"애니메이션":"독서"}</small><b>{name}</b><em>{i===0?"방금 새 감상글이 올라왔어요":"오늘 함께 읽은 기록 7개"}</em></span><span className="new-count">새 글 {i===0?18:7}</span></button>)}</div>:<Empty title="아직 가입한 커뮤니티가 없어요" text="관심 취미를 선택하고 나와 맞는 작은 커뮤니티를 찾아보세요." action={<button className="primary" onClick={()=>setView("discover")}>커뮤니티 탐색</button>}/>}</section>
