@@ -1,0 +1,159 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Home, Compass, Users, CalendarDays, MessageCircle, Bell, UserRound, Search, Plus, Heart, Bookmark, MoreHorizontal, ImagePlus, Send, MapPin, Clock3, Check, X, Settings, LogOut, Shield, Flag, ChevronRight, Gamepad2, Music2, BookOpen, Palette, Dumbbell, Plane, Code2, Utensils, Clapperboard, Sparkles } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+
+type Viewer = { id: string; name: string; email: string } | null;
+type View = "home" | "discover" | "mine" | "activities" | "messages" | "notifications" | "profile";
+type Post = { id: string; author: string; handle: string; avatar: string; community: string; kind: string; body: string; time: string; image?: string; likes: number; comments: number; tags: string[]; liked?: boolean; saved?: boolean; mine?: boolean };
+
+const categories = [
+  ["게임", "PC · 콘솔 · 모바일 · 보드게임", Gamepad2, "#e8f0ff"], ["음악·아이돌", "아이돌 · 밴드 · 공연", Music2, "#f4eaff"], ["애니·만화", "애니 · 웹툰 · 코스프레", Sparkles, "#fff0e5"], ["영화·드라마", "영화 · OTT · 배우", Clapperboard, "#e9f8ff"], ["독서·창작", "독서 · 글쓰기 · 그림 · 사진", BookOpen, "#eef7e9"], ["운동·스포츠", "러닝 · 헬스 · 야구 · 축구", Dumbbell, "#fff0f1"], ["만들기", "요리 · 베이킹 · 뜨개질 · 식물", Utensils, "#fff6dd"], ["여행·야외", "여행 · 캠핑 · 등산 · 자전거", Plane, "#e7f8f2"], ["기술·탐구", "코딩 · 전자기기 · 과학", Code2, "#edf0ff"], ["기타", "새로운 취향을 자유롭게", Palette, "#f4f4f5"],
+] as const;
+
+const communities = [
+  { name: "이번 분기 애니 정주행", cat: "애니메이션", members: "12.4K", desc: "이번 분기 신작을 같이 보고 감상을 나눠요.", color: "linear-gradient(135deg,#5b7cfa,#8cb8ff)", joined: true },
+  { name: "매일 20분 독서", cat: "독서", members: "8.1K", desc: "짧아도 꾸준하게. 오늘 읽은 문장을 기록해요.", color: "linear-gradient(135deg,#21a179,#8bd3bb)", joined: true },
+  { name: "퇴근 후 한 장", cat: "사진", members: "5.6K", desc: "평범한 하루에서 발견한 장면을 공유해요.", color: "linear-gradient(135deg,#ef8354,#ffd166)", joined: false },
+  { name: "인디게임 발견대", cat: "PC 게임", members: "3.2K", desc: "숨은 게임을 찾아 플레이 기록을 남겨요.", color: "linear-gradient(135deg,#7357ff,#d099ff)", joined: false },
+];
+
+const seedPosts: Post[] = [
+  { id:"p1", author:"파란귤", handle:"@blue_tangerine", avatar:"파", community:"매일 20분 독서", kind:"후기", body:"오늘은 딱 20분만 읽으려다가 한 챕터를 다 읽었어요. 주인공이 자기 마음을 인정하는 장면에서 한참 멈춰 있었습니다. 여러분은 오늘 어떤 문장에 머물렀나요?", time:"18분", image:"/hobby-desk.png", likes:128, comments:24, tags:["#오늘의독서", "#덕질기록"] },
+  { id:"p2", author:"모카별", handle:"@mocca_star", avatar:"모", community:"이번 분기 애니 정주행", kind:"잡담", body:"3화 엔딩 연출 보신 분… 음악 들어오는 타이밍 때문에 아직도 여운이 안 가셔요. 스포 없는 감상만 모아봐요!", time:"42분", likes:89, comments:31, tags:["#이번분기애니"] },
+  { id:"p3", author:"윤슬", handle:"@yoonseul_pic", avatar:"윤", community:"퇴근 후 한 장", kind:"작품", body:"비 온 뒤 골목의 파란 시간. 카메라를 챙겨 나오길 잘했어요.", time:"1시간", image:"/hobby-desk.png", likes:247, comments:19, tags:["#퇴근후한장", "#블루아워"] },
+];
+
+const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["discover","커뮤니티",Compass],["mine","내 커뮤니티",Users],["activities","함께하는 활동",CalendarDays],["messages","대화",MessageCircle,3],["notifications","알림",Bell,4],["profile","마이페이지",UserRound]];
+
+export default function SocialApp({ user, signInPath, signOutPath }: { user: Viewer; signInPath: string; signOutPath: string }) {
+  const [view, setView] = useState<View>("home");
+  const [posts, setPosts] = useState(seedPosts);
+  const [joined, setJoined] = useState([communities[0].name, communities[1].name]);
+  const [search, setSearch] = useState("");
+  const [feed, setFeed] = useState("추천");
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const hydrated = useRef(false);
+  const requireLogin = (action: () => void) => user ? action() : toast("로그인 후 이용할 수 있어요", { action: { label: "로그인", onClick: () => location.assign(signInPath) } });
+
+  useEffect(() => {
+    const context = (document as Document & { modelContext?: { registerTool?: (tool: unknown, options?: unknown) => unknown } }).modelContext;
+    if (!context?.registerTool) return;
+    const controller = new AbortController();
+    try {
+      void Promise.resolve(context.registerTool({ name:"search_hobby_communities", title:"취미 커뮤니티 찾기", description:"취향사이에서 이름이나 취미로 커뮤니티를 검색하고 화면에 결과를 표시합니다.", inputSchema:{type:"object",properties:{query:{type:"string"}},required:["query"],additionalProperties:false}, annotations:{readOnlyHint:true,untrustedContentHint:true}, execute:(input:unknown)=>{ const q=String((input as {query?:string}).query||"").trim(); if(!q) throw new Error("검색어가 필요합니다."); setSearch(q); setView("discover"); return {query:q,results:communities.filter(c=>(c.name+c.cat+c.desc).includes(q)).map(c=>c.name)}; } }, {signal:controller.signal}));
+    } catch { /* unsupported preview */ }
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/state").then(r => r.json()).then(({state}) => {
+      if (state?.joined) setJoined(state.joined);
+      if (state?.posts) setPosts((current: Post[]) => current.map(p => state.posts[p.id] ? {...p,...state.posts[p.id]} : p));
+      hydrated.current = true;
+    }).catch(() => { hydrated.current = true; toast.error("저장된 정보를 불러오지 못했어요") });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !hydrated.current) return;
+    const id = setTimeout(() => {
+      const reactions = Object.fromEntries(posts.map(p => [p.id, {liked:p.liked,saved:p.saved,likes:p.likes}]));
+      fetch("/api/state", {method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({joined,posts:reactions})}).catch(()=>toast.error("변경 사항을 저장하지 못했어요"));
+    }, 500);
+    return () => clearTimeout(id);
+  }, [joined, posts, user]);
+
+  const filteredCommunities = useMemo(() => communities.filter(c => (c.name+c.cat+c.desc).toLowerCase().includes(search.toLowerCase())), [search]);
+  const togglePost = (id:string, key:"liked"|"saved") => requireLogin(() => setPosts(p => p.map(x => x.id===id ? {...x,[key]:!x[key], likes:key==="liked" ? x.likes+(x.liked?-1:1) : x.likes} : x)));
+  const join = (name:string) => requireLogin(() => { setJoined(v => v.includes(name) ? v.filter(x=>x!==name) : [...v,name]); toast(joined.includes(name)?"커뮤니티에서 탈퇴했어요":"커뮤니티에 가입했어요"); });
+
+  return <div className="app-shell">
+    <header className="topbar">
+      <button className="brand" onClick={()=>setView("home")} aria-label="취향사이 홈"><span className="brand-mark">취</span><span>취향사이</span></button>
+      <nav className="desktop-nav" aria-label="주요 메뉴">{nav.slice(0,4).map(([id,label])=><button key={id} className={view===id?"active":""} onClick={()=>setView(id)}>{label}</button>)}</nav>
+      <label className="top-search"><Search size={19}/><input value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&setView("discover")} placeholder="취미, 커뮤니티 검색" aria-label="취미와 커뮤니티 검색"/></label>
+      <div className="top-actions">
+        <IconNav id="messages" label="대화" icon={MessageCircle} count={3} active={view==="messages"} onClick={setView}/>
+        <IconNav id="notifications" label="알림" icon={Bell} count={4} active={view==="notifications"} onClick={setView}/>
+        {user ? <button className="mini-profile" onClick={()=>setView("profile")}><Avatar text={user.name}/><span>{user.name}</span></button> : <a className="login" href={signInPath} target="_top">로그인</a>}
+      </div>
+    </header>
+
+    <main className="page-wrap">
+      {view==="home" && <HomeView user={user} posts={posts} feed={feed} setFeed={setFeed} setView={setView} togglePost={togglePost} requireLogin={requireLogin} openComposer={()=>setComposerOpen(true)} joined={joined}/>} 
+      {view==="discover" && <DiscoverView search={search} setSearch={setSearch} communities={filteredCommunities} joined={joined} join={join}/>} 
+      {view==="mine" && <CommunityView joined={joined} join={join} requireLogin={requireLogin} posts={posts}/>} 
+      {view==="activities" && <ActivitiesView requireLogin={requireLogin}/>} 
+      {view==="messages" && <MessagesView user={user} requireLogin={requireLogin}/>} 
+      {view==="notifications" && <NotificationsView setView={setView}/>} 
+      {view==="profile" && <ProfileView user={user} signInPath={signInPath} signOutPath={signOutPath} setView={setView}/>} 
+    </main>
+    <button className="floating-compose" onClick={()=>requireLogin(()=>setComposerOpen(true))} aria-label="새 게시글 작성"><Plus/> <span>글쓰기</span></button>
+    <nav className="mobile-nav" aria-label="모바일 메뉴">{nav.filter(([id])=>["home","discover","mine","messages","profile"].includes(id)).map(([id,label,Icon,count])=><button key={id} className={view===id?"active":""} onClick={()=>setView(id)}><span><Icon/>{count&&<i>{count}</i>}</span><small>{label.replace("커뮤니티","탐색").replace("마이페이지","MY")}</small></button>)}</nav>
+    <Composer open={composerOpen} setOpen={setComposerOpen} user={user} loading={loading} setLoading={setLoading} error={error} setError={setError} onAdd={post=>{setPosts(p=>[post,...p]);setComposerOpen(false);toast.success("게시글을 올렸어요");}}/>
+  </div>;
+}
+
+function IconNav({id,label,icon:Icon,count,active,onClick}:{id:View,label:string,icon:typeof Bell,count:number,active:boolean,onClick:(v:View)=>void}) { return <button className={`icon-nav ${active?"active":""}`} aria-label={`${label}, 읽지 않음 ${count}개`} onClick={()=>onClick(id)}><Icon/>{count>0&&<b>{count}</b>}</button>; }
+function Avatar({text,size="md"}:{text:string,size?:"sm"|"md"|"lg"}) { return <span className={`avatar ${size}`}>{text.slice(0,1)}</span>; }
+
+function HomeView({user,posts,feed,setFeed,setView,togglePost,requireLogin,openComposer,joined}:{user:Viewer;posts:Post[];feed:string;setFeed:(x:string)=>void;setView:(v:View)=>void;togglePost:(id:string,k:"liked"|"saved")=>void;requireLogin:(f:()=>void)=>void;openComposer:()=>void;joined:string[]}) {
+  const [selected,setSelected]=useState<Post|null>(null);
+  const rows=[
+    ...posts,
+    {id:"b4",author:"고래구름",handle:"@whale_cloud",avatar:"고",community:"인디게임 발견대",kind:"정보",body:"이번 주말 무료 체험 가능한 인디게임 6개 정리",time:"2시간",likes:76,comments:18,tags:["#인디게임"]},
+    {id:"b5",author:"밤산책",handle:"@nightwalk",avatar:"밤",community:"퇴근 후 한 장",kind:"질문",body:"야간 사진 찍을 때 손떨림 줄이는 나만의 방법 있나요?",time:"3시간",likes:42,comments:27,tags:["#사진"]},
+    {id:"b6",author:"책갈피",handle:"@page_mark",avatar:"책",community:"매일 20분 독서",kind:"잡담",body:"완독하고 나서 바로 다음 책으로 넘어가시나요?",time:"어제",likes:31,comments:14,tags:["#독서"]},
+  ];
+  return <div className="board-shell">
+    <aside className="board-sidebar">
+      <h2>내 커뮤니티</h2>
+      <button className="board-all active" onClick={()=>setView("home")}><Home/> 전체 게시판 <b>25</b></button>
+      {joined.map((name,i)=><button key={name} onClick={()=>setView("mine")}><span className={`community-dot c${i}`}>{name[0]}</span><span>{name}</span><b>{i===0?18:7}</b></button>)}
+      <hr/><button onClick={()=>setView("discover")}><Compass/> 커뮤니티 찾기</button>
+    </aside>
+    <section className="board-main">
+      <header className="board-header"><div><span className="demo-chip">예시 데이터</span><h1>전체 게시판</h1><p>가입한 커뮤니티와 관심 취미의 새 글을 모아봐요.</p></div><button className="primary" onClick={()=>requireLogin(openComposer)}><Plus/> 글쓰기</button></header>
+      <div className="board-notice"><b>공지</b><button onClick={()=>toast("커뮤니티 이용 규칙을 확인했어요")}>서로의 취향을 존중하는 취향사이 이용 규칙</button><span>운영팀</span></div>
+      <div className="board-toolbar"><div className="segmented">{["최신","인기","이미지"].map(x=><button className={feed===x||feed==="추천"&&x==="최신"?"active":""} key={x} onClick={()=>setFeed(x)}>{x}</button>)}</div><label><Search/><input placeholder="게시글 검색"/></label></div>
+      <div className="board-list" role="table" aria-label="취향 게시글 목록">
+        <div className="board-cols" role="row"><span>말머리</span><span>제목</span><span>작성자</span><span>댓글</span><span>좋아요</span></div>
+        {rows.map((p,i)=><button className="board-row" role="row" key={p.id} onClick={()=>setSelected(p)}><span className={`board-kind k${i%4}`}>{p.kind}</span><span className="board-title"><b>{p.body}</b><small>{p.community} · {p.time} 전 {p.image&&"· 사진"}</small></span><span className="board-author"><Avatar text={p.avatar} size="sm"/>{p.author}</span><span>{p.comments}</span><span>{p.likes}</span></button>)}
+      </div>
+      <div className="board-footer"><button disabled>이전</button><b>1</b><button>2</button><button>3</button><button>다음</button></div>
+    </section>
+    <aside className="board-right"><section><h3>지금 인기 있는 취미</h3>{["#이번분기애니","#오늘의독서","#블루아워","#인디게임"].map((x,i)=><button key={x}><b>{i+1}</b><span>{x}</span></button>)}</section><section><h3>오늘의 활동</h3><b>좋아하는 장면 30분 드로잉</b><p>금요일 오후 9:00 · 온라인</p><button className="outline" onClick={()=>setView("activities")}>자세히 보기</button></section><p className="demo-note">프로필과 게시글은 개발용 예시 데이터입니다.</p></aside>
+    <Dialog open={!!selected} onOpenChange={v=>!v&&setSelected(null)}><DialogContent className="board-detail">{selected&&<><DialogHeader><DialogTitle>{selected.body}</DialogTitle></DialogHeader><div className="detail-meta"><Avatar text={selected.avatar}/><span><b>{selected.author}</b><small>{selected.community} · {selected.time} 전</small></span></div><p>{selected.body}</p>{selected.image&&<img src={selected.image} alt="게시글 첨부 이미지"/>}<div className="detail-actions"><button onClick={()=>togglePost(selected.id,"liked")}><Heart/> 좋아요 {selected.likes}</button><button><MessageCircle/> 댓글 {selected.comments}</button><button onClick={()=>togglePost(selected.id,"saved")}><Bookmark/> 저장</button></div><div className="comment-box"><Input placeholder="댓글을 입력하세요"/><Button onClick={()=>requireLogin(()=>toast.success("댓글을 남겼어요"))}>등록</Button></div></>}</DialogContent></Dialog>
+  </div>;
+}
+
+function PostCard({post,togglePost,requireLogin}:{post:Post;togglePost:(id:string,k:"liked"|"saved")=>void;requireLogin:(f:()=>void)=>void}) {
+  const [showComment,setShowComment]=useState(false); const [comment,setComment]=useState("");
+  return <article className="post-card"><header><Avatar text={post.avatar}/><div><button className="author">{post.author}</button><span>{post.handle} · {post.time}</span></div><button className="community-pill">{post.community}</button><button aria-label="게시글 메뉴" className="ghost"><MoreHorizontal/></button></header><div className="post-body"><span className="kind">{post.kind}</span><p>{post.body}</p><div className="tags">{post.tags.map(t=><button key={t}>{t}</button>)}</div></div>{post.image&&<img className="post-image" src={post.image} alt="취미 기록 이미지"/>}<footer><button className={post.liked?"liked":""} onClick={()=>togglePost(post.id,"liked")}><Heart fill={post.liked?"currentColor":"none"}/><span>{post.likes}</span></button><button onClick={()=>setShowComment(!showComment)}><MessageCircle/><span>{post.comments}</span></button><button onClick={()=>togglePost(post.id,"saved")} className={post.saved?"saved":""}><Bookmark fill={post.saved?"currentColor":"none"}/><span>저장</span></button><button onClick={()=>toast("신고 사유를 선택하는 관리 화면으로 연결돼요")}><Flag/><span>신고</span></button></footer>{showComment&&<div className="comment-box"><Input value={comment} onChange={e=>setComment(e.target.value)} placeholder="따뜻한 댓글을 남겨보세요"/><Button onClick={()=>requireLogin(()=>{if(!comment.trim())return;toast.success("댓글을 남겼어요");setComment("");})}>등록</Button></div>}</article>;
+}
+
+function DiscoverView({search,setSearch,communities:items,joined,join}:{search:string;setSearch:(x:string)=>void;communities:typeof communities;joined:string[];join:(n:string)=>void}) { return <div className="single-page"><header className="page-title"><span className="eyebrow">COMMUNITY</span><h1>내 취향이 머무를 곳을 찾아보세요</h1><p>하나의 취미 안에서도 분위기와 목적이 다른 여러 커뮤니티를 만날 수 있어요.</p></header><div className="discover-search"><Search/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="예: 애니메이션, 독서, 러닝"/></div><h2 className="subheading">취미 카테고리</h2><div className="category-grid">{categories.map(([name,desc,Icon,bg])=><button key={name} onClick={()=>setSearch(name)}><span style={{background:bg}}><Icon/></span><b>{name}</b><small>{desc}</small></button>)}</div><div className="section-row"><h2 className="subheading">{search?`‘${search}’ 검색 결과`:"지금 활발한 커뮤니티"}</h2><span>{items.length}개</span></div>{items.length?<div className="community-grid">{items.map(c=><article key={c.name}><div className="community-cover" style={{background:c.color}}><span>{c.cat}</span><b>{c.name[0]}</b></div><div className="community-info"><small>{c.cat} · 멤버 {c.members}명</small><h3>{c.name}</h3><p>{c.desc}</p><div><span>#취미친구 #기록</span><button className={joined.includes(c.name)?"joined":""} onClick={()=>join(c.name)}>{joined.includes(c.name)?"가입됨":"가입하기"}</button></div></div></article>)}</div>:<Empty title="검색 결과가 없어요" text="다른 취미 이름이나 더 짧은 단어로 찾아보세요."/>}</div>; }
+
+function CommunityView({joined,join,requireLogin,posts}:{joined:string[];join:(n:string)=>void;requireLogin:(f:()=>void)=>void;posts:Post[]}) { const name=joined[0]||communities[0].name; return <div className="single-page"><section className="community-hero"><div className="hero-art"><Sparkles/></div><div><span>애니·만화 · 애니메이션</span><h1>{name}</h1><p>이번 분기 신작을 같이 보고, 스포일러 규칙을 지키며 감상을 나누는 커뮤니티예요.</p><div className="hero-stats"><b>12,428</b> 멤버 <b>386</b> 오늘의 글</div></div><button className="joined" onClick={()=>join(name)}><Check/> 가입됨</button></section><Tabs defaultValue="home" className="community-tabs"><TabsList><TabsTrigger value="home">홈</TabsTrigger><TabsTrigger value="posts">게시글</TabsTrigger><TabsTrigger value="gallery">작품·사진</TabsTrigger><TabsTrigger value="members">멤버</TabsTrigger><TabsTrigger value="activity">활동</TabsTrigger><TabsTrigger value="chat">단체 대화</TabsTrigger></TabsList><TabsContent value="home"><div className="community-content"><div><div className="notice"><b>📌 공지</b><span>스포일러는 제목에 작품명과 회차를 적어주세요.</span></div>{posts.slice(0,2).map(p=><PostCard key={p.id} post={p} togglePost={()=>{}} requireLogin={requireLogin}/>)}</div><aside className="rail-card"><h3>커뮤니티 규칙</h3><ol><li>취향을 존중해요.</li><li>스포일러 표기를 지켜요.</li><li>반복 홍보와 도배는 금지예요.</li></ol><button className="outline" onClick={()=>toast("운영자 전용 관리 화면입니다")}>운영 정보 보기</button></aside></div></TabsContent><TabsContent value="posts"><Empty title="게시글 모아보기" text="말머리와 최신순 필터로 모든 글을 살펴볼 수 있어요."/></TabsContent><TabsContent value="gallery"><div className="gallery"><img src="/hobby-desk.png" alt="회원 작품 예시"/><img src="/hobby-desk.png" alt="회원 취미 기록 예시"/><img src="/hobby-desk.png" alt="회원 사진 예시"/></div></TabsContent><TabsContent value="members"><MemberList/></TabsContent><TabsContent value="activity"><ActivitiesView requireLogin={requireLogin}/></TabsContent><TabsContent value="chat"><MessagesView user={null} requireLogin={requireLogin}/></TabsContent></Tabs></div>; }
+
+function ActivitiesView({requireLogin}:{requireLogin:(f:()=>void)=>void}) { const [joined,setJoined]=useState<string[]>([]); const acts=[{id:"a1",type:"온라인",title:"좋아하는 장면 30분 드로잉",time:"9월 27일 금요일 · 오후 9:00",count:"18 / 30명",desc:"카메라를 켜지 않아도 괜찮아요. 각자 그린 뒤 마지막 10분 동안 함께 공유해요."},{id:"a2",type:"온라인",title:"주말 아침 40분 같이 읽기",time:"9월 28일 토요일 · 오전 10:00",count:"7 / 12명",desc:"시작과 끝에 읽을 책과 한 줄 감상만 나눠요."},{id:"a3",type:"오프라인 · 서울",title:"성수 필름 사진 산책",time:"10월 3일 목요일 · 오후 3:00",count:"5 / 8명",desc:"상세 만남 장소는 참여자에게만 공개됩니다."}]; return <div className="single-page activities-page"><header className="page-title"><span className="eyebrow">TOGETHER</span><h1>함께하면 더 즐거운 취미 시간</h1><p>온라인 활동이 기본이에요. 오프라인 모임은 지역만 공개하고 상세 장소는 참가자에게만 알려드려요.</p><button className="primary" onClick={()=>requireLogin(()=>toast("새 활동 작성 화면을 열었어요"))}><Plus/> 활동 만들기</button></header><div className="filter-row"><button className="active">전체</button><button>온라인</button><button>오프라인</button><button>참여 중</button></div><div className="activity-list">{acts.map((a,i)=><article key={a.id}><div className={`date-badge n${i}`}><b>{i===0?"27":i===1?"28":"03"}</b><span>{i===2?"10월":"9월"}</span></div><div className="activity-copy"><span className="type-chip">{a.type}</span><h2>{a.title}</h2><p>{a.desc}</p><div><span><Clock3/>{a.time}</span>{i===2&&<span><MapPin/>서울 성동구</span>}</div></div><div className="activity-action"><span>참여 {a.count}</span><button className={joined.includes(a.id)?"joined":"primary"} onClick={()=>requireLogin(()=>setJoined(v=>v.includes(a.id)?v.filter(x=>x!==a.id):[...v,a.id]))}>{joined.includes(a.id)?"참여 취소":"참여하기"}</button></div></article>)}</div></div>; }
+
+function MessagesView({user,requireLogin}:{user:Viewer;requireLogin:(f:()=>void)=>void}) { const [selected,setSelected]=useState(0); const [text,setText]=useState(""); const [messages,setMessages]=useState(["어제 추천해 준 작품 봤어요!","정말 좋았죠? 마지막 장면 이야기하고 싶었어요 🙌"]); const chats=[{name:"모카별",last:"정말 좋았죠? 마지막 장면…",time:"방금",unread:2},{name:"이번 분기 애니 정주행",last:"오늘 10시에 같이 봐요!",time:"12분",unread:1},{name:"윤슬",last:"사진 색감 너무 좋아요",time:"어제",unread:0}]; const send=()=>requireLogin(()=>{if(!text.trim())return;setMessages(v=>[...v,text]);setText("");}); return <div className="message-layout"><aside><header><h1>대화</h1><button aria-label="새 대화"><Plus/></button></header><label><Search/><input placeholder="친구와 대화 검색"/></label>{chats.map((c,i)=><button className={selected===i?"active":""} key={c.name} onClick={()=>setSelected(i)}><Avatar text={c.name}/><span><b>{c.name}</b><small>{c.last}</small></span><time>{c.time}</time>{c.unread>0&&<i>{c.unread}</i>}</button>)}</aside><section className="chat-panel"><header><Avatar text={chats[selected].name}/><div><b>{chats[selected].name}</b><span>{selected===1?"커뮤니티 단체 대화 · 128명":"친구"}</span></div><button><MoreHorizontal/></button></header><div className="messages"><div className="day">오늘</div>{messages.map((m,i)=><div key={i} className={i%2?"bubble mine":"bubble"}>{m}<time>{i%2?"오후 8:42":"오후 8:39"}</time></div>)}</div><div className="message-input"><button aria-label="이미지 첨부"><ImagePlus/></button><input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={user?"메시지를 입력하세요":"로그인 후 대화할 수 있어요"}/><button className="send" onClick={send} aria-label="메시지 보내기"><Send/></button></div></section></div>; }
+
+function NotificationsView({setView}:{setView:(v:View)=>void}) { const notes=[{icon:Heart,title:"파란귤님이 회원님의 게시글을 좋아해요.",sub:"오늘의 드로잉 기록",time:"5분"},{icon:Users,title:"모카별님이 친구 요청을 보냈어요.",sub:"같은 취향 친구가 되어보세요.",time:"23분",actions:true},{icon:MessageCircle,title:"새 댓글이 달렸어요.",sub:"이 장면 저도 정말 좋아해요!",time:"1시간"},{icon:CalendarDays,title:"참여 중인 활동 시간이 변경됐어요.",sub:"30분 드로잉 · 금요일 오후 9:00",time:"3시간"}]; return <div className="single-page narrow"><header className="page-title row"><div><span className="eyebrow">NOTIFICATIONS</span><h1>알림</h1></div><button className="outline">모두 읽음</button></header><div className="notification-list">{notes.map((n,i)=><article key={n.title} className={i<2?"unread":""} onClick={()=>setView(i===1?"profile":i===3?"activities":"home")}><span className="note-icon"><n.icon/></span><div><b>{n.title}</b><p>{n.sub}</p><small>{n.time} 전</small>{n.actions&&<div className="request-actions"><button className="primary" onClick={e=>{e.stopPropagation();toast.success("친구 요청을 수락했어요")}}>수락</button><button className="outline" onClick={e=>e.stopPropagation()}>거절</button></div>}</div></article>)}</div></div>; }
+
+function ProfileView({user,signInPath,signOutPath,setView}:{user:Viewer;signInPath:string;signOutPath:string;setView:(v:View)=>void}) { if(!user)return <div className="single-page"><Empty title="나만의 취향 공간을 만들어보세요" text="로그인하면 관심 취미, 커뮤니티, 북마크와 대화를 한곳에서 관리할 수 있어요." action={<a className="primary" href={signInPath} target="_top">로그인 / 회원가입</a>}/></div>; return <div className="profile-page single-page"><section className="profile-hero"><Avatar text={user.name} size="lg"/><div><span>@taste_friend</span><h1>{user.name}</h1><p>좋아하는 것을 오래 좋아하고 싶어요. 애니메이션, 독서, 사진을 함께 즐겨요.</p><div className="interest-tags"><span>애니메이션</span><span>독서</span><span>사진</span></div></div><button className="outline"><Settings/> 프로필 편집</button></section><button className="big-chat" onClick={()=>setView("messages")}><span><MessageCircle/><b>대화로 바로 가기</b></span><span>읽지 않은 대화 3개 <ChevronRight/></span></button><div className="profile-grid"><section><h2>내 활동</h2>{[[Users,"가입한 커뮤니티","2개"],[BookOpen,"작성한 게시글","8개"],[Bookmark,"북마크","24개"],[CalendarDays,"참여 중인 활동","2개"]].map(([Icon,label,count])=><button key={String(label)}><Icon/><span>{String(label)}</span><b>{String(count)}</b><ChevronRight/></button>)}</section><section><h2>친구와 요청</h2><div className="friend-preview"><Avatar text="모"/><span><b>모카별</b><small>친구 요청을 보냈어요</small></span><button className="primary">수락</button></div><div className="friend-preview"><Avatar text="윤"/><span><b>윤슬</b><small>3개의 공통 취미</small></span><button className="outline">대화</button></div></section><section><h2>설정</h2><button><Bell/><span>알림 설정</span><ChevronRight/></button><button><Shield/><span>차단·신고 관리</span><ChevronRight/></button><a className="logout" href={signOutPath} target="_top"><LogOut/> 로그아웃</a></section></div></div>; }
+
+function MemberList(){return <div className="members">{["파란귤","모카별","윤슬","고래구름"].map((m,i)=><div key={m}><Avatar text={m}/><span><b>{m}</b><small>{i===0?"운영자 · 애니메이션":"멤버 · 공통 취미 2개"}</small></span>{i===0?<span className="manager">운영자</span>:<button className="outline" onClick={()=>toast("친구 요청을 보냈어요")}>친구 추가</button>}</div>)}</div>}
+function Empty({title,text,action}:{title:string;text:string;action?:React.ReactNode}){return <div className="empty-state"><span><Search/></span><h2>{title}</h2><p>{text}</p>{action}</div>}
+
+function Composer({open,setOpen,user,loading,setLoading,error,setError,onAdd}:{open:boolean;setOpen:(x:boolean)=>void;user:Viewer;loading:boolean;setLoading:(x:boolean)=>void;error:string;setError:(x:string)=>void;onAdd:(p:Post)=>void}) { const [body,setBody]=useState(""); const [kind,setKind]=useState("덕질 기록"); const [images,setImages]=useState<string[]>([]); const fileRef=useRef<HTMLInputElement>(null); const pick=(files:FileList|null)=>{if(!files)return;setError("");const list=Array.from(files).slice(0,4);if(list.some(f=>f.size>5_000_000)){setError("이미지는 한 장당 5MB 이하로 올려주세요.");return;}Promise.all(list.map(f=>new Promise<string>(resolve=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.readAsDataURL(f)}))).then(setImages)}; const submit=async()=>{if(!body.trim()&&!images.length){setError("글이나 이미지 중 하나는 꼭 넣어주세요.");return;}setLoading(true);setError("");try{await new Promise(r=>setTimeout(r,450));onAdd({id:crypto.randomUUID(),author:user?.name||"나",handle:"@me",avatar:user?.name||"나",community:"매일 20분 독서",kind,body:body.trim(),time:"방금",image:images[0],likes:0,comments:0,tags:["#취향기록"],mine:true});setBody("");setImages([])}catch{setError("업로드하지 못했어요. 잠시 후 다시 시도해 주세요.")}finally{setLoading(false)}}; return <Dialog open={open} onOpenChange={setOpen}><DialogContent className="composer"><DialogHeader><DialogTitle>오늘의 취향 기록</DialogTitle></DialogHeader><div className="composer-user"><Avatar text={user?.name||"나"}/><div><b>{user?.name}</b><select value={kind} onChange={e=>setKind(e.target.value)}><option>덕질 기록</option><option>질문</option><option>정보 공유</option><option>작품 공유</option><option>후기</option><option>잡담</option></select></div></div><Textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="좋아하는 마음을 자유롭게 남겨보세요…" aria-label="게시글 내용"/><div className="preview-strip">{images.map((src,i)=><span key={src}><img src={src} alt={`첨부 이미지 ${i+1}`}/><button onClick={()=>setImages(v=>v.filter((_,n)=>n!==i))} aria-label="이미지 삭제"><X/></button></span>)}</div>{error&&<p className="form-error">{error}</p>}<div className="composer-bottom"><input ref={fileRef} hidden type="file" multiple accept="image/*" onChange={e=>pick(e.target.files)}/><button className="attach" onClick={()=>fileRef.current?.click()}><ImagePlus/> 사진 <small>{images.length}/4</small></button><Button onClick={submit} disabled={loading}>{loading?"올리는 중…":"게시하기"}</Button></div></DialogContent></Dialog>; }
