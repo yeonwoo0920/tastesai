@@ -869,3 +869,60 @@ small,
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif !important;
   font-weight: 450 !important;
 }
+
+/* 배경 풍경과 콘텐츠 창을 연결하는 시간대별 표면 */
+html{--ambient-panel:rgba(255,254,250,.95);--ambient-panel-strong:rgba(255,254,250,.985);--ambient-title:rgba(231,242,247,.96);--ambient-edge:#9eb4c4;--ambient-divider:#c9d6df;--ambient-panel-shadow:0 3px 0 rgba(48,72,91,.14)}
+html[data-ambient-time="morning"]{--ambient-panel:rgba(255,252,242,.94);--ambient-panel-strong:rgba(255,253,247,.985);--ambient-title:rgba(242,238,220,.96);--ambient-edge:#b6b7aa;--ambient-divider:#ddd8c8}
+html[data-ambient-time="day"]{--ambient-panel:rgba(247,253,253,.94);--ambient-panel-strong:rgba(253,255,254,.985);--ambient-title:rgba(220,241,246,.96);--ambient-edge:#95b5c4;--ambient-divider:#c6dce3}
+html[data-ambient-time="sunset"]{--ambient-panel:rgba(252,246,247,.94);--ambient-panel-strong:rgba(255,250,247,.985);--ambient-title:rgba(238,222,235,.96);--ambient-edge:#ae9bae;--ambient-divider:#ddcdd7}
+html[data-ambient-time="night"]{--ambient-panel:rgba(239,243,250,.945);--ambient-panel-strong:rgba(247,249,253,.985);--ambient-title:rgba(218,228,242,.965);--ambient-edge:#7e91b0;--ambient-divider:#c4cede;--ambient-panel-shadow:0 3px 0 rgba(17,29,61,.24)}
+html[data-theme="dark"]{--ambient-panel:rgba(25,35,48,.94);--ambient-panel-strong:rgba(27,38,51,.985);--ambient-title:rgba(37,53,69,.97);--ambient-edge:#50677c;--ambient-divider:#3c5062;--ambient-panel-shadow:0 3px 0 rgba(0,0,0,.3)}
+html[data-theme="dark"][data-ambient-time="sunset"]{--ambient-panel:rgba(39,32,47,.94);--ambient-panel-strong:rgba(42,35,48,.985);--ambient-title:rgba(64,46,64,.97);--ambient-edge:#7a6179;--ambient-divider:#554456}
+html[data-theme="dark"][data-ambient-time="night"]{--ambient-panel:rgba(20,29,44,.95);--ambient-panel-strong:rgba(23,33,49,.99);--ambient-title:rgba(31,45,65,.98);--ambient-edge:#536b8a;--ambient-divider:#354963}
+
+.home-heading,.page-title,.market-head,
+.my-community-zone,.record-zone,.hot-rail,.home-quiet-links,
+.discover-search,.category-grid,.work-list,.room-list,
+.community-switcher,.community-homepage .room-head,.community-tabs [role=tablist],
+.inside-board-head,.inside-board-list,.room-overview,.room-members,.room-feature-link,
+.post-card,.market-hobbies,.market-tools,.market-sections>section,
+.activity-list article,.message-layout,.notification-list,
+.profile-hero,.profile-grid>section,.public-profile-head,.public-records,.relationship-summary,
+.mini-home-top,.mini-home-body,.mini-bottom-grid>section {
+  border-color:var(--ambient-edge) !important;
+  box-shadow:var(--ambient-panel-shadow) !important;
+}
+.home-heading,.page-title,.market-head,
+.my-community-zone,.record-zone,.hot-rail,.home-quiet-links,
+.discover-search,.work-list,.room-list,
+.community-homepage .room-head,.inside-board-head,.inside-board-list>button,
+.room-overview,.room-members,.room-feature-link,.post-card,
+.market-hobbies,.market-tools,.market-sections>section,.activity-list article,
+.message-layout,.notification-list,.profile-hero,.profile-grid>section,
+.public-profile-head,.public-records,.relationship-summary,
+.mini-home-top,.mini-home-body,.mini-bottom-grid>section {
+  background-color:var(--ambient-panel-strong) !important;
+}
+.zone-title,.section-row,.market-sections>section>header,
+.community-tabs [role=tablist],.inside-cols,.notification-list:before,
+.message-layout>aside,.post-card>header {
+  background:var(--ambient-title) !important;
+  border-color:var(--ambient-edge) !important;
+}
+.record-table article,.hot-compact>button,.my-community-rows>button,
+.inside-board-list>button,.inside-notice,.notification-list article,
+.message-layout>aside,.chat-panel>header,.mini-diary article {
+  border-color:var(--ambient-divider) !important;
+}
+.record-table article:hover,.hot-compact>button:hover,.my-community-rows>button:hover,.inside-board-list>button:hover{background:color-mix(in srgb,var(--ambient-title) 52%,transparent) !important}
+html[data-theme="dark"] .record-copy b,html[data-theme="dark"] .hot-compact strong,html[data-theme="dark"] .inside-board-list>button>b,html[data-theme="dark"] .activity-copy h2,html[data-theme="dark"] .goods-copy h2{color:#eef4fb !important}
+html[data-theme="dark"] .record-kind,html[data-theme="dark"] .kind,html[data-theme="dark"] .community-mark{border-color:#52677a !important;background:#263849 !important;color:#c9d7e3 !important}
+
+/* 레퍼런스를 재해석한 각진 픽셀 비와 눈 */
+.weather-rain .ambient-particles i,.weather-storm .ambient-particles i{width:3px;height:18px;border-radius:0;background:rgba(245,251,255,.82);box-shadow:11px 23px 0 rgba(224,243,252,.58),-8px 44px 0 rgba(255,255,255,.68);opacity:.8;animation-name:ambient-rain;animation-duration:1.75s;animation-timing-function:linear}
+.weather-rain .ambient-particles i:nth-child(3n),.weather-storm .ambient-particles i:nth-child(3n){height:9px;opacity:.56}.weather-rain .ambient-particles i:nth-child(4n),.weather-storm .ambient-particles i:nth-child(4n){height:25px;animation-duration:2.15s}
+.weather-snow .ambient-particles i{width:5px;height:5px;border-radius:0;background:#fffde7;opacity:.9;box-shadow:0 -7px 0 #fffde7,0 7px 0 #fffde7,-7px 0 0 #fffde7,7px 0 0 #fffde7,-5px -5px 0 rgba(255,253,231,.82),5px 5px 0 rgba(255,253,231,.82);animation-name:ambient-snow;animation-duration:9s;animation-timing-function:linear}
+.weather-snow .ambient-particles i:nth-child(3n){width:3px;height:3px;box-shadow:none;opacity:.65;animation-duration:12s}.weather-snow .ambient-particles i:nth-child(4n){transform:scale(.72);animation-duration:7.5s}
+@keyframes ambient-rain{0%{transform:translate3d(0,-55px,0)}100%{transform:translate3d(-24px,calc(100vh + 60px),0)}}
+@keyframes ambient-snow{0%{transform:translate3d(0,-25px,0) rotate(0)}45%{transform:translate3d(18px,45vh,0) rotate(90deg)}100%{transform:translate3d(-10px,calc(100vh + 35px),0) rotate(180deg)}}
+@media(prefers-reduced-motion:reduce){.weather-rain .ambient-particles i,.weather-storm .ambient-particles i,.weather-snow .ambient-particles i{animation:none!important;opacity:.28}}

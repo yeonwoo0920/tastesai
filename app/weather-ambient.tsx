@@ -5,8 +5,8 @@ import {CloudSun,MapPin} from "lucide-react";
 type TimeMode="auto"|"morning"|"day"|"sunset"|"night"; type TimePhase=Exclude<TimeMode,"auto">;
 type WeatherMode="auto"|"clear"|"cloudy"|"rain"|"snow"; type WeatherKind=Exclude<WeatherMode,"auto">|"storm"; type RGB=[number,number,number];
 const TIME_KEY="chwihyang-ambient-time",WEATHER_KEY="chwihyang-ambient-weather",LEGACY_KEY="chwihyang-ambient-mood",CACHE_KEY="chwihyang-weather-cache";
-const times:[TimeMode,string][]=[["auto","자동"],["morning","아침"],["day","낮"],["sunset","노을"],["night","밤"]];
-const weathers:[WeatherMode,string][]=[["auto","자동"],["clear","맑음"],["cloudy","흐림"],["rain","비"],["snow","눈"]];
+const times:[TimeMode,string][]=[["morning","아침"],["sunset","저녁"],["night","밤"]];
+const weathers:[WeatherMode,string][]=[["clear","맑음"],["rain","비"],["snow","눈"]];
 const fixedMinutes:Record<TimePhase,number>={morning:450,day:780,sunset:1110,night:1320};
 const stops:{minute:number;top:RGB;bottom:RGB;glow:RGB}[]=[{minute:0,top:[22,30,75],bottom:[48,60,108],glow:[180,197,231]},{minute:300,top:[41,55,104],bottom:[196,130,139],glow:[255,199,148]},{minute:420,top:[112,170,214],bottom:[242,209,170],glow:[255,226,168]},{minute:600,top:[91,176,225],bottom:[210,237,243],glow:[255,241,189]},{minute:960,top:[82,161,218],bottom:[204,229,236],glow:[255,227,169]},{minute:1080,top:[112,111,173],bottom:[238,157,145],glow:[255,190,119]},{minute:1200,top:[54,58,117],bottom:[126,82,126],glow:[239,175,151]},{minute:1320,top:[24,32,81],bottom:[53,62,111],glow:[194,205,235]},{minute:1440,top:[22,30,75],bottom:[48,60,108],glow:[180,197,231]}];
 const minutesNow=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
@@ -15,8 +15,8 @@ const color=(v:RGB)=>`rgb(${v.join(" ")})`; const mix=(a:number,b:number,t:numbe
 function sky(m:number){let i=stops.findIndex(s=>s.minute>=m);i=Math.max(1,i);const a=stops[i-1],b=stops[i],t=Math.max(0,Math.min(1,(m-a.minute)/(b.minute-a.minute)));const blend=(k:"top"|"bottom"|"glow")=>color(a[k].map((v,n)=>mix(v,b[k][n],t)) as RGB);return{top:blend("top"),bottom:blend("bottom"),glow:blend("glow")}}
 function weatherCode(code:number):WeatherKind{if(code===0)return"clear";if([71,73,75,77,85,86].includes(code))return"snow";if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return"rain";if(code>=95)return"storm";return"cloudy"}
 const validTime=(v:string|null):v is TimeMode=>times.some(([id])=>id===v),validWeather=(v:string|null):v is WeatherMode=>weathers.some(([id])=>id===v);
-function initialTime():TimeMode{if(typeof window==="undefined")return"auto";const v=localStorage.getItem(TIME_KEY);if(validTime(v))return v;const old=localStorage.getItem(LEGACY_KEY);return old==="sunset"||old==="night"?old:"auto"}
-function initialWeather():WeatherMode{if(typeof window==="undefined")return"auto";const v=localStorage.getItem(WEATHER_KEY);if(validWeather(v))return v;const old=localStorage.getItem(LEGACY_KEY);return old==="sunny"?"clear":old==="rain"||old==="snow"?old:"auto"}
+function initialTime():TimeMode{if(typeof window==="undefined")return"morning";const v=localStorage.getItem(TIME_KEY);if(validTime(v))return v;const current=phase(minutesNow());return current==="day"?"morning":current}
+function initialWeather():WeatherMode{if(typeof window==="undefined")return"clear";const v=localStorage.getItem(WEATHER_KEY);if(validWeather(v))return v;const old=localStorage.getItem(LEGACY_KEY);return old==="rain"||old==="snow"?old:"clear"}
 function cached():WeatherKind|null{try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||"null") as {kind?:WeatherKind;at?:number}|null;if(c?.kind&&c.at&&Date.now()-c.at<1_800_000)return c.kind}catch{}return null}
 export function WeatherAmbient(){
  const[timeMode,setTime]=useState<TimeMode>(initialTime),[weatherMode,setWeatherMode]=useState<WeatherMode>(initialWeather),[weather,setWeather]=useState<WeatherKind>(()=>typeof window==="undefined"?"clear":cached()||"clear"),[now,setNow]=useState(minutesNow),[open,setOpen]=useState(false),[locationState,setLocation]=useState<"idle"|"loading"|"ready"|"denied"|"error">("idle");
