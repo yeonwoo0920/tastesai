@@ -142,3 +142,23 @@ h1,.home-heading h1,.page-title h1,.room-head h1,.market-head h1{font-weight:850
 .primary{font-weight:800}.outline,.joined{font-weight:700}.kind{font-weight:750}
 @media(max-width:820px){.my-community-zone,.record-zone,.hot-rail{padding:18px}.home-main-grid{gap:18px}.home-quiet-links{padding:15px 16px}.room-head{padding:18px}.market-hobbies,.market-sections>section{padding:16px}.record-table article{min-height:86px}}
 .record-table article{grid-template-columns:60px minmax(0,1fr) 22px 205px}.record-meta{white-space:nowrap}@media(max-width:820px){.record-table article{grid-template-columns:52px minmax(0,1fr) 18px}.record-meta{white-space:normal}}
+
+/* 더 밝은 기본 팔레트와 사용자가 선택하는 다크 모드 */
+:root{color-scheme:light;--background:#f4f8fc;--foreground:#172033;--ink:#172033;--sub:#566579;--border:#d8e2ed;--surface:#ffffff;--surface-soft:#f6f9fc;--blue:#2468e8;--blue-dark:#1955c6}
+html,body{background:var(--background)}
+.topbar{background:rgba(255,255,255,.97)}
+.home-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.theme-toggle{min-height:42px;display:inline-flex;align-items:center;gap:8px;padding:0 13px;border:1px solid #cbd8e7;border-radius:8px;background:#fff;color:#3e4d61;font-size:13px;font-weight:750;white-space:nowrap}
+.theme-toggle:hover{border-color:#9eb8dc;background:#f8fbff}.theme-toggle svg{width:17px;height:17px;color:var(--blue)}
+.fanwork-intro{margin:4px 0 0;color:var(--sub);font-size:13px;font-weight:500}.fandom-room .fanwork-categories{margin:0;padding:0 18px;background:var(--surface)}
+
+html[data-theme="dark"]{color-scheme:dark;--background:#121821;--foreground:#ecf2fa;--ink:#ecf2fa;--sub:#aab7c8;--border:#334052;--surface:#1a2330;--surface-soft:#202b39;--blue:#70a5ff;--blue-dark:#4a88ef;--card:#1a2330;--card-foreground:#ecf2fa;--popover:#1a2330;--popover-foreground:#ecf2fa;--primary:#70a5ff;--primary-foreground:#0f1722;--secondary:#233249;--secondary-foreground:#cfe0ff;--muted:#222d3b;--muted-foreground:#aab7c8;--accent:#263852;--accent-foreground:#d7e5ff;--input:#435169;--ring:#70a5ff}
+html[data-theme="dark"],html[data-theme="dark"] body{background:var(--background);color:var(--ink)}
+html[data-theme="dark"] .topbar{background:rgba(21,29,40,.97)}
+html[data-theme="dark"] h1,html[data-theme="dark"] .home-heading h1,html[data-theme="dark"] .page-title h1,html[data-theme="dark"] .room-head h1,html[data-theme="dark"] .market-head h1,html[data-theme="dark"] .zone-title h2,html[data-theme="dark"] .discovery-step h2,html[data-theme="dark"] .inside-board-head h2,html[data-theme="dark"] .market-sections>section>header h2{color:#f4f7fb}
+html[data-theme="dark"] .my-community-zone,html[data-theme="dark"] .record-zone,html[data-theme="dark"] .hot-rail,html[data-theme="dark"] .home-quiet-links,html[data-theme="dark"] .discover-search,html[data-theme="dark"] .category-grid button,html[data-theme="dark"] .work-list,html[data-theme="dark"] .room-list,html[data-theme="dark"] .room-head,html[data-theme="dark"] .community-tabs [role=tablist],html[data-theme="dark"] .inside-board-head,html[data-theme="dark"] .inside-board-list>button,html[data-theme="dark"] .room-overview,html[data-theme="dark"] .room-members,html[data-theme="dark"] .room-feature-link,html[data-theme="dark"] .fandom-room .gallery,html[data-theme="dark"] .gallery-note,html[data-theme="dark"] .market-hobbies,html[data-theme="dark"] .market-tools,html[data-theme="dark"] .market-sections>section,html[data-theme="dark"] .profile-hero,html[data-theme="dark"] .profile-grid>section,html[data-theme="dark"] .message-layout,html[data-theme="dark"] .notification-list,html[data-theme="dark"] .theme-toggle{background:var(--surface);border-color:var(--border)}
+html[data-theme="dark"] .record-copy b,html[data-theme="dark"] .hot-compact strong,html[data-theme="dark"] .work-list h3,html[data-theme="dark"] .room-list h3,html[data-theme="dark"] .inside-board-list>button>b,html[data-theme="dark"] .goods-copy h2,html[data-theme="dark"] .my-community-rows>button>span:nth-child(2)>b{color:#edf3fa}
+html[data-theme="dark"] .inside-cols,html[data-theme="dark"] .inside-notice,html[data-theme="dark"] .community-mark,html[data-theme="dark"] .room-tags span{background:#222d3b;color:#b8c5d6}
+html[data-theme="dark"] .record-table article:hover,html[data-theme="dark"] .hot-compact>button:hover,html[data-theme="dark"] .my-community-rows>button:hover{background:#202a38}
+html[data-theme="dark"] input,html[data-theme="dark"] textarea,html[data-theme="dark"] select{color:var(--ink)}
+@media(max-width:520px){.home-heading{align-items:flex-start}.theme-toggle span{display:none}.theme-toggle{width:42px;padding:0;justify-content:center}}
