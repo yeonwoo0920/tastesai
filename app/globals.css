@@ -977,3 +977,14 @@ html[data-theme="dark"] .goods-copy,html[data-theme="dark"] .goods-copy strong,h
 
 @media(max-width:820px){.page-wrap{min-height:calc(100vh - 120px);margin:12px 10px 80px;padding:20px 14px 34px}.page-wrap:before{left:8px;right:8px}}
 @media(max-width:520px){.page-wrap{margin:8px 6px 76px;padding:18px 8px 28px;border-radius:5px;backdrop-filter:blur(4px)}}
+
+/* 풍경을 가리지 않도록 전체 덮개는 제거하고 게시판 면만 남긴다 */
+.page-wrap{max-width:1480px;min-height:0;margin:18px auto 34px;padding:24px 26px 96px;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none}
+.page-wrap:before{display:none}
+html[data-theme="dark"] .page-wrap{background:transparent;border:0;box-shadow:none;backdrop-filter:none}
+.community-tabs [role=tablist]{min-height:48px!important;padding:7px 7px 0!important;overflow-x:auto!important;overflow-y:visible!important;align-items:flex-end!important}
+.community-tabs [role=tab]{margin:0 0 -1px!important;border-top-width:1px!important;overflow:visible!important}
+.auto-weather-status{display:block;padding:9px 7px 4px;color:#718091;font-size:9px;line-height:1.45}
+html[data-theme="dark"] .auto-weather-status{color:#a8b8c7}
+@media(max-width:820px){.page-wrap{margin:10px auto 76px;padding:20px 14px 34px}}
+@media(max-width:520px){.page-wrap{margin:6px auto 72px;padding:16px 8px 26px}}
