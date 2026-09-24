@@ -988,3 +988,87 @@ html[data-theme="dark"] .page-wrap{background:transparent;border:0;box-shadow:no
 html[data-theme="dark"] .auto-weather-status{color:#a8b8c7}
 @media(max-width:820px){.page-wrap{margin:10px auto 76px;padding:20px 14px 34px}}
 @media(max-width:520px){.page-wrap{margin:6px auto 72px;padding:16px 8px 26px}}
+
+/* 콘텐츠 우선: 풍경은 바깥 여백에 남기고 읽는 면에는 비치지 않게 한다 */
+html,
+html[data-ambient-time="morning"],
+html[data-ambient-time="day"],
+html[data-ambient-time="sunset"],
+html[data-ambient-time="night"]{
+  --ambient-panel:#f7f8fa;
+  --ambient-panel-strong:#fffefa;
+  --ambient-title:#e9eff4;
+  --ambient-edge:#8ea3b5;
+  --ambient-divider:#c3ced8;
+  --ambient-panel-shadow:0 2px 0 rgba(31,49,67,.16);
+}
+.home-heading,.page-title,.market-head,
+.my-community-zone,.record-zone,.hot-rail,.home-quiet-links,
+.discover-search,.category-grid,.work-list,.room-list,
+.community-switcher,.community-homepage .room-head,.community-tabs [role=tablist],
+.inside-board-head,.inside-board-list,.room-overview,.room-members,.room-feature-link,
+.post-card,.market-hobbies,.market-tools,.market-sections>section,
+.activity-list article,.message-layout,.notification-list,
+.profile-hero,.profile-grid>section,.public-profile-head,.public-records,.relationship-summary,
+.mini-home-top,.mini-home-body,.mini-bottom-grid>section,
+.discovery-step{
+  background:var(--ambient-panel-strong) !important;
+  backdrop-filter:none !important;
+}
+.zone-title,.section-row,.market-sections>section>header,.inside-cols,
+.notification-list:before,.community-tabs [role=tablist],.post-card>header{
+  background:var(--ambient-title) !important;
+}
+.category-grid button{background:#fffefa !important}
+.record-table article,.hot-compact>button,.my-community-rows>button,
+.work-list article,.room-list article,.inside-board-list>button,
+.market-grid article,.notification-list article,.mini-diary article{
+  background:#fffefa !important;
+  border-bottom:1px solid var(--ambient-divider) !important;
+}
+.record-table article:nth-child(even),.work-list article:nth-child(even),
+.room-list article:nth-child(even),.inside-board-list>button:nth-child(even),
+.market-grid article:nth-child(even){background:#f6f8fa !important}
+.record-table article:hover,.hot-compact>button:hover,.my-community-rows>button:hover,
+.work-list article:hover,.room-list article:hover,.inside-board-list>button:hover,
+.market-grid article:hover{background:#edf3f7 !important}
+.work-list article,.room-list article{padding-inline:10px}
+.market-sections>section{overflow:hidden}
+.market-grid{border-top:1px solid var(--ambient-divider)}
+.goods-copy{background:transparent !important}
+.discover-page,.market-page,.activities-page,.community-homepage,
+.record-copy b,.work-list h3,.room-list h3,.goods-copy h2,.goods-copy>strong{color:#17212b !important}
+.record-copy small,.record-meta,.work-list small,.work-list p,.work-list em,
+.room-list small,.room-list p,.goods-copy small{color:#59697a !important}
+
+html[data-theme="dark"],
+html[data-theme="dark"][data-ambient-time="sunset"],
+html[data-theme="dark"][data-ambient-time="night"]{
+  --ambient-panel:#182330;
+  --ambient-panel-strong:#1d2a37;
+  --ambient-title:#283b4b;
+  --ambient-edge:#61778a;
+  --ambient-divider:#415566;
+}
+html[data-theme="dark"] .home-heading,html[data-theme="dark"] .page-title,
+html[data-theme="dark"] .market-head,html[data-theme="dark"] .my-community-zone,
+html[data-theme="dark"] .record-zone,html[data-theme="dark"] .hot-rail,
+html[data-theme="dark"] .home-quiet-links,html[data-theme="dark"] .discover-search,
+html[data-theme="dark"] .category-grid,html[data-theme="dark"] .work-list,
+html[data-theme="dark"] .room-list,html[data-theme="dark"] .discovery-step,
+html[data-theme="dark"] .market-hobbies,html[data-theme="dark"] .market-tools,
+html[data-theme="dark"] .market-sections>section,html[data-theme="dark"] .activity-list article,
+html[data-theme="dark"] .message-layout,html[data-theme="dark"] .notification-list{
+  background:var(--ambient-panel-strong) !important;
+}
+html[data-theme="dark"] .record-table article,html[data-theme="dark"] .hot-compact>button,
+html[data-theme="dark"] .my-community-rows>button,html[data-theme="dark"] .work-list article,
+html[data-theme="dark"] .room-list article,html[data-theme="dark"] .inside-board-list>button,
+html[data-theme="dark"] .market-grid article{background:#1d2a37 !important}
+html[data-theme="dark"] .record-table article:nth-child(even),html[data-theme="dark"] .work-list article:nth-child(even),
+html[data-theme="dark"] .room-list article:nth-child(even),html[data-theme="dark"] .inside-board-list>button:nth-child(even),
+html[data-theme="dark"] .market-grid article:nth-child(even){background:#22313f !important}
+html[data-theme="dark"] .discover-page,html[data-theme="dark"] .market-page,
+html[data-theme="dark"] .record-copy b,html[data-theme="dark"] .work-list h3,
+html[data-theme="dark"] .room-list h3,html[data-theme="dark"] .goods-copy h2,
+html[data-theme="dark"] .goods-copy>strong{color:#f0f5f8 !important}
