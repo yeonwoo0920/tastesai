@@ -926,3 +926,54 @@ html[data-theme="dark"] .record-kind,html[data-theme="dark"] .kind,html[data-the
 @keyframes ambient-rain{0%{transform:translate3d(0,-55px,0)}100%{transform:translate3d(-24px,calc(100vh + 60px),0)}}
 @keyframes ambient-snow{0%{transform:translate3d(0,-25px,0) rotate(0)}45%{transform:translate3d(18px,45vh,0) rotate(90deg)}100%{transform:translate3d(-10px,calc(100vh + 35px),0) rotate(180deg)}}
 @media(prefers-reduced-motion:reduce){.weather-rain .ambient-particles i,.weather-storm .ambient-particles i,.weather-snow .ambient-particles i{animation:none!important;opacity:.28}}
+
+/* 풍경 위에 흩어진 카드가 아니라 하나의 홈페이지 창으로 묶는다 */
+.page-wrap{
+  position:relative;
+  max-width:1480px;
+  min-height:calc(100vh - 98px);
+  margin:24px auto 34px;
+  padding:24px 26px 96px;
+  border:1px solid var(--ambient-edge);
+  border-radius:7px;
+  background:var(--ambient-panel);
+  box-shadow:0 8px 0 rgba(25,42,67,.18),0 18px 50px rgba(20,35,58,.13);
+  backdrop-filter:blur(7px) saturate(.82);
+}
+.page-wrap:before{content:"";position:absolute;left:12px;right:12px;top:9px;height:5px;border-top:1px dotted color-mix(in srgb,var(--ambient-edge) 72%,transparent);border-bottom:1px dotted color-mix(in srgb,var(--ambient-edge) 45%,transparent);pointer-events:none}
+.page-wrap>.single-page,.page-wrap>.community-home{position:relative;z-index:1}
+
+/* 창 내부의 패널은 배경이 아니라 한 단계 낮은 종이 면으로 */
+.home-heading,.page-title,.market-head{background:color-mix(in srgb,var(--ambient-panel-strong) 72%,var(--ambient-title)) !important;box-shadow:none !important}
+.my-community-zone,.record-zone,.hot-rail,.home-quiet-links,
+.discover-search,.work-list,.room-list,.category-grid,
+.community-switcher,.community-homepage .room-head,.room-overview,.room-members,.room-feature-link,
+.market-hobbies,.market-tools,.market-sections>section,.activity-list article,
+.message-layout,.notification-list,.profile-hero,.profile-grid>section,
+.public-profile-head,.public-records,.relationship-summary{
+  background:color-mix(in srgb,var(--ambient-panel-strong) 78%,transparent) !important;
+  box-shadow:0 2px 0 color-mix(in srgb,var(--ambient-edge) 24%,transparent) !important;
+}
+.zone-title,.section-row,.market-sections>section>header,.inside-cols,.notification-list:before{background:color-mix(in srgb,var(--ambient-title) 88%,var(--ambient-panel-strong)) !important}
+.market-page,.discover-page,.activities-page,.community-homepage{color:var(--ink)}
+.discovery-step{padding:10px 12px;margin-bottom:0;border-left:1px solid var(--ambient-edge);border-right:1px solid var(--ambient-edge);background:color-mix(in srgb,var(--ambient-panel-strong) 76%,transparent)}
+.discovery-step:first-of-type{border-top:1px solid var(--ambient-edge)}
+.discover-page .category-grid,.discover-page .work-list,.discover-page .room-list{margin-top:0}
+.market-sections{gap:14px}.market-grid article{background:transparent !important}.goods-copy{background:transparent}
+.inside-board-head,.post-category-filter,.inside-board-list{background:color-mix(in srgb,var(--ambient-panel-strong) 90%,transparent) !important}.inside-board-list>button{background:transparent !important}
+
+/* 다크 모드에서는 창 자체가 밤 풍경과 이어지고 글은 확실히 밝힌다 */
+html[data-theme="dark"] .page-wrap{background:rgba(18,28,43,.92);border-color:#58708d;box-shadow:0 8px 0 rgba(4,9,18,.38),0 20px 55px rgba(0,0,0,.25);backdrop-filter:blur(8px) saturate(.72)}
+html[data-theme="dark"] .home-heading,html[data-theme="dark"] .page-title,html[data-theme="dark"] .market-head,
+html[data-theme="dark"] .my-community-zone,html[data-theme="dark"] .record-zone,html[data-theme="dark"] .hot-rail,
+html[data-theme="dark"] .market-hobbies,html[data-theme="dark"] .market-tools,html[data-theme="dark"] .market-sections>section,
+html[data-theme="dark"] .category-grid,html[data-theme="dark"] .work-list,html[data-theme="dark"] .room-list,
+html[data-theme="dark"] .activity-list article,html[data-theme="dark"] .message-layout,html[data-theme="dark"] .notification-list{background:rgba(27,39,55,.9) !important}
+html[data-theme="dark"] .discovery-step{background:rgba(31,45,62,.88);border-color:#50677c}
+html[data-theme="dark"] .category-grid button{background:#1f2d3c !important;color:#edf3f8;border-color:#40576a}
+html[data-theme="dark"] .category-grid small,html[data-theme="dark"] .discovery-step p,html[data-theme="dark"] .market-head p{color:#aebdca !important}
+html[data-theme="dark"] .market-hobbies button,html[data-theme="dark"] .market-tools button,html[data-theme="dark"] .market-tools label{background:#1a2735;color:#dbe6ef;border-color:#40566a}
+html[data-theme="dark"] .goods-copy,html[data-theme="dark"] .goods-copy strong,html[data-theme="dark"] .goods-copy h2{color:#eef4f9 !important}
+
+@media(max-width:820px){.page-wrap{min-height:calc(100vh - 120px);margin:12px 10px 80px;padding:20px 14px 34px}.page-wrap:before{left:8px;right:8px}}
+@media(max-width:520px){.page-wrap{margin:8px 6px 76px;padding:18px 8px 28px;border-radius:5px;backdrop-filter:blur(4px)}}
