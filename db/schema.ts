@@ -10,6 +10,7 @@ export const publicPosts = sqliteTable("public_posts", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(), authorName: text("author_name").notNull(),
   community: text("community").notNull(), kind: text("kind").notNull().default("잡담"),
+  title: text("title").notNull().default("제목 없음"),
   body: text("body").notNull(), images: text("images").notNull().default("[]"),
   tags: text("tags").notNull().default("[]"), createdAt: integer("created_at").notNull(),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE `public_posts` ADD `title` text DEFAULT '제목 없음' NOT NULL;
