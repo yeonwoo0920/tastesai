@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 type Viewer = { id: string; name: string; email: string } | null;
-type View = "home" | "discover" | "mine" | "activities" | "messages" | "notifications" | "profile";
+type View = "home" | "discover" | "mine" | "activities" | "market" | "messages" | "notifications" | "profile";
 type Post = { id: string; author: string; handle: string; avatar: string; community: string; kind: string; body: string; time: string; image?: string; likes: number; comments: number; tags: string[]; liked?: boolean; saved?: boolean; mine?: boolean };
 
 const categories = [
@@ -30,7 +30,7 @@ const seedPosts: Post[] = [
   { id:"p3", author:"윤슬", handle:"@yoonseul_pic", avatar:"윤", community:"퇴근 후 한 장", kind:"작품", body:"비 온 뒤 골목의 파란 시간. 카메라를 챙겨 나오길 잘했어요.", time:"1시간", image:"/hobby-desk.png", likes:247, comments:19, tags:["#퇴근후한장", "#블루아워"] },
 ];
 
-const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["discover","커뮤니티",Compass],["mine","내 커뮤니티",Users],["activities","함께하는 활동",CalendarDays],["messages","대화",MessageCircle,3],["notifications","알림",Bell,4],["profile","마이페이지",UserRound]];
+const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["discover","커뮤니티",Compass],["mine","내 커뮤니티",Users],["activities","함께하는 활동",CalendarDays],["market","굿즈 거래소",Bookmark],["messages","대화",MessageCircle,3],["notifications","알림",Bell,4],["profile","마이페이지",UserRound]];
 
 export default function SocialApp({ user, signInPath, signOutPath }: { user: Viewer; signInPath: string; signOutPath: string }) {
   const [view, setView] = useState<View>("home");
@@ -79,7 +79,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   return <div className="app-shell">
     <header className="topbar">
       <button className="brand" onClick={()=>setView("home")} aria-label="취향사이 홈"><span className="brand-mark">취</span><span>취향사이</span></button>
-      <nav className="desktop-nav" aria-label="주요 메뉴">{nav.slice(0,4).map(([id,label])=><button key={id} className={view===id?"active":""} onClick={()=>setView(id)}>{label}</button>)}</nav>
+      <nav className="desktop-nav" aria-label="주요 메뉴">{nav.slice(0,5).map(([id,label])=><button key={id} className={view===id?"active":""} onClick={()=>setView(id)}>{label}</button>)}</nav>
       <label className="top-search"><Search size={19}/><input value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&setView("discover")} placeholder="취미, 커뮤니티 검색" aria-label="취미와 커뮤니티 검색"/></label>
       <div className="top-actions">
         <IconNav id="messages" label="대화" icon={MessageCircle} count={3} active={view==="messages"} onClick={setView}/>
@@ -93,12 +93,13 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       {view==="discover" && <DiscoverView search={search} setSearch={setSearch} communities={filteredCommunities} joined={joined} join={join}/>} 
       {view==="mine" && <CommunityView joined={joined} join={join} requireLogin={requireLogin} posts={posts}/>} 
       {view==="activities" && <ActivitiesView requireLogin={requireLogin}/>} 
+      {view==="market" && <MarketplaceView requireLogin={requireLogin} setView={setView}/>} 
       {view==="messages" && <MessagesView user={user} requireLogin={requireLogin}/>} 
       {view==="notifications" && <NotificationsView setView={setView}/>} 
       {view==="profile" && <ProfileView user={user} signInPath={signInPath} signOutPath={signOutPath} setView={setView}/>} 
     </main>
     <button className="floating-compose" onClick={()=>requireLogin(()=>setComposerOpen(true))} aria-label="새 게시글 작성"><Plus/> <span>글쓰기</span></button>
-    <nav className="mobile-nav" aria-label="모바일 메뉴">{nav.filter(([id])=>["home","discover","mine","messages","profile"].includes(id)).map(([id,label,Icon,count])=><button key={id} className={view===id?"active":""} onClick={()=>setView(id)}><span><Icon/>{count&&<i>{count}</i>}</span><small>{label.replace("커뮤니티","탐색").replace("마이페이지","MY")}</small></button>)}</nav>
+    <nav className="mobile-nav" aria-label="모바일 메뉴">{nav.filter(([id])=>["home","discover","market","messages","profile"].includes(id)).map(([id,label,Icon,count])=><button key={id} className={view===id?"active":""} onClick={()=>setView(id)}><span><Icon/>{count&&<i>{count}</i>}</span><small>{label.replace("커뮤니티","탐색").replace("굿즈 거래소","거래소").replace("마이페이지","MY")}</small></button>)}</nav>
     <Composer open={composerOpen} setOpen={setComposerOpen} user={user} loading={loading} setLoading={setLoading} error={error} setError={setError} onAdd={post=>{setPosts(p=>[post,...p]);setComposerOpen(false);toast.success("게시글을 올렸어요");}}/>
   </div>;
 }
@@ -119,10 +120,17 @@ function HomeView({user,posts,feed,setFeed,setView,togglePost,requireLogin,openC
       <h2>내 커뮤니티</h2>
       <button className="board-all active" onClick={()=>setView("home")}><Home/> 전체 게시판 <b>25</b></button>
       {joined.map((name,i)=><button key={name} onClick={()=>setView("mine")}><span className={`community-dot c${i}`}>{name[0]}</span><span>{name}</span><b>{i===0?18:7}</b></button>)}
-      <hr/><button onClick={()=>setView("discover")}><Compass/> 커뮤니티 찾기</button>
+      <hr/><button onClick={()=>setView("discover")}><Compass/> 커뮤니티 찾기</button><button onClick={()=>setView("market")}><Bookmark/> 굿즈 거래소</button>
     </aside>
     <section className="board-main">
       <header className="board-header"><div><span className="demo-chip">예시 데이터</span><h1>전체 게시판</h1><p>가입한 커뮤니티와 관심 취미의 새 글을 모아봐요.</p></div><button className="primary" onClick={()=>requireLogin(openComposer)}><Plus/> 글쓰기</button></header>
+      <div className="board-sections">
+        <section className="hot-section"><header><span>HOT</span><h2>실시간 인기글</h2><button>더보기</button></header>{rows.slice(0,4).map((p,i)=><button key={p.id} onClick={()=>setSelected(p)}><b>{i+1}</b><span>{p.body}</span><small>{p.comments}</small></button>)}</section>
+        <section><header><span>01</span><h2>콘텐츠 덕질</h2></header>{["아이돌·음악","애니·만화","영화·드라마","공연·배우"].map((x,i)=><button key={x} onClick={()=>setView("discover")}><span>{x}</span><small>{["새 글 42","새 글 38","새 글 21","새 글 14"][i]}</small></button>)}</section>
+        <section><header><span>02</span><h2>창작·라이프</h2></header>{["독서·글쓰기","그림·사진","만들기·공예","여행·야외"].map((x,i)=><button key={x} onClick={()=>setView("discover")}><span>{x}</span><small>{["새 글 17","새 글 29","새 글 11","새 글 8"][i]}</small></button>)}</section>
+        <section><header><span>03</span><h2>게임·스포츠</h2></header>{["PC·콘솔 게임","모바일·보드게임","운동·스포츠","기술·탐구"].map((x,i)=><button key={x} onClick={()=>setView("discover")}><span>{x}</span><small>{["새 글 33","새 글 19","새 글 25","새 글 12"][i]}</small></button>)}</section>
+      </div>
+      <div className="board-list-title"><h2>전체 새글</h2><span>관심 취미와 가입 게시판의 최신 글</span></div>
       <div className="board-notice"><b>공지</b><button onClick={()=>toast("커뮤니티 이용 규칙을 확인했어요")}>서로의 취향을 존중하는 취향사이 이용 규칙</button><span>운영팀</span></div>
       <div className="board-toolbar"><div className="segmented">{["최신","인기","이미지"].map(x=><button className={feed===x||feed==="추천"&&x==="최신"?"active":""} key={x} onClick={()=>setFeed(x)}>{x}</button>)}</div><label><Search/><input placeholder="게시글 검색"/></label></div>
       <div className="board-list" role="table" aria-label="취향 게시글 목록">
@@ -146,6 +154,25 @@ function DiscoverView({search,setSearch,communities:items,joined,join}:{search:s
 function CommunityView({joined,join,requireLogin,posts}:{joined:string[];join:(n:string)=>void;requireLogin:(f:()=>void)=>void;posts:Post[]}) { const name=joined[0]||communities[0].name; return <div className="single-page"><section className="community-hero"><div className="hero-art"><Sparkles/></div><div><span>애니·만화 · 애니메이션</span><h1>{name}</h1><p>이번 분기 신작을 같이 보고, 스포일러 규칙을 지키며 감상을 나누는 커뮤니티예요.</p><div className="hero-stats"><b>12,428</b> 멤버 <b>386</b> 오늘의 글</div></div><button className="joined" onClick={()=>join(name)}><Check/> 가입됨</button></section><Tabs defaultValue="home" className="community-tabs"><TabsList><TabsTrigger value="home">홈</TabsTrigger><TabsTrigger value="posts">게시글</TabsTrigger><TabsTrigger value="gallery">작품·사진</TabsTrigger><TabsTrigger value="members">멤버</TabsTrigger><TabsTrigger value="activity">활동</TabsTrigger><TabsTrigger value="chat">단체 대화</TabsTrigger></TabsList><TabsContent value="home"><div className="community-content"><div><div className="notice"><b>📌 공지</b><span>스포일러는 제목에 작품명과 회차를 적어주세요.</span></div>{posts.slice(0,2).map(p=><PostCard key={p.id} post={p} togglePost={()=>{}} requireLogin={requireLogin}/>)}</div><aside className="rail-card"><h3>커뮤니티 규칙</h3><ol><li>취향을 존중해요.</li><li>스포일러 표기를 지켜요.</li><li>반복 홍보와 도배는 금지예요.</li></ol><button className="outline" onClick={()=>toast("운영자 전용 관리 화면입니다")}>운영 정보 보기</button></aside></div></TabsContent><TabsContent value="posts"><Empty title="게시글 모아보기" text="말머리와 최신순 필터로 모든 글을 살펴볼 수 있어요."/></TabsContent><TabsContent value="gallery"><div className="gallery"><img src="/hobby-desk.png" alt="회원 작품 예시"/><img src="/hobby-desk.png" alt="회원 취미 기록 예시"/><img src="/hobby-desk.png" alt="회원 사진 예시"/></div></TabsContent><TabsContent value="members"><MemberList/></TabsContent><TabsContent value="activity"><ActivitiesView requireLogin={requireLogin}/></TabsContent><TabsContent value="chat"><MessagesView user={null} requireLogin={requireLogin}/></TabsContent></Tabs></div>; }
 
 function ActivitiesView({requireLogin}:{requireLogin:(f:()=>void)=>void}) { const [joined,setJoined]=useState<string[]>([]); const acts=[{id:"a1",type:"온라인",title:"좋아하는 장면 30분 드로잉",time:"9월 27일 금요일 · 오후 9:00",count:"18 / 30명",desc:"카메라를 켜지 않아도 괜찮아요. 각자 그린 뒤 마지막 10분 동안 함께 공유해요."},{id:"a2",type:"온라인",title:"주말 아침 40분 같이 읽기",time:"9월 28일 토요일 · 오전 10:00",count:"7 / 12명",desc:"시작과 끝에 읽을 책과 한 줄 감상만 나눠요."},{id:"a3",type:"오프라인 · 서울",title:"성수 필름 사진 산책",time:"10월 3일 목요일 · 오후 3:00",count:"5 / 8명",desc:"상세 만남 장소는 참여자에게만 공개됩니다."}]; return <div className="single-page activities-page"><header className="page-title"><span className="eyebrow">TOGETHER</span><h1>함께하면 더 즐거운 취미 시간</h1><p>온라인 활동이 기본이에요. 오프라인 모임은 지역만 공개하고 상세 장소는 참가자에게만 알려드려요.</p><button className="primary" onClick={()=>requireLogin(()=>toast("새 활동 작성 화면을 열었어요"))}><Plus/> 활동 만들기</button></header><div className="filter-row"><button className="active">전체</button><button>온라인</button><button>오프라인</button><button>참여 중</button></div><div className="activity-list">{acts.map((a,i)=><article key={a.id}><div className={`date-badge n${i}`}><b>{i===0?"27":i===1?"28":"03"}</b><span>{i===2?"10월":"9월"}</span></div><div className="activity-copy"><span className="type-chip">{a.type}</span><h2>{a.title}</h2><p>{a.desc}</p><div><span><Clock3/>{a.time}</span>{i===2&&<span><MapPin/>서울 성동구</span>}</div></div><div className="activity-action"><span>참여 {a.count}</span><button className={joined.includes(a.id)?"joined":"primary"} onClick={()=>requireLogin(()=>setJoined(v=>v.includes(a.id)?v.filter(x=>x!==a.id):[...v,a.id]))}>{joined.includes(a.id)?"참여 취소":"참여하기"}</button></div></article>)}</div></div>; }
+
+function MarketplaceView({requireLogin,setView}:{requireLogin:(f:()=>void)=>void;setView:(v:View)=>void}) {
+  const [filter,setFilter]=useState("전체"); const [query,setQuery]=useState(""); const [wish,setWish]=useState<string[]>([]); const [writeOpen,setWriteOpen]=useState(false);
+  const goods=[
+    {id:"g1",type:"판매",cat:"아이돌",title:"투어 한정 포토카드 3종 세트",price:"18,000원",seller:"파란귤",time:"10분 전",status:"판매중",image:"/hobby-desk.png"},
+    {id:"g2",type:"판매",cat:"애니·만화",title:"캐릭터 아크릴 스탠드 미개봉",price:"24,000원",seller:"모카별",time:"34분 전",status:"판매중",image:"/hobby-desk.png"},
+    {id:"g3",type:"구해요",cat:"공연",title:"2024 공연 프로그램북 구해요",price:"가격 제안",seller:"고래구름",time:"1시간 전",status:"구매희망",image:"/hobby-desk.png"},
+    {id:"g4",type:"판매",cat:"게임",title:"게임 OST 바이닐 한정판",price:"42,000원",seller:"밤산책",time:"2시간 전",status:"예약중",image:"/hobby-desk.png"},
+    {id:"g5",type:"나눔",cat:"독서",title:"북커버와 책갈피 세트 나눔",price:"무료나눔",seller:"책갈피",time:"3시간 전",status:"나눔중",image:"/hobby-desk.png"},
+    {id:"g6",type:"교환",cat:"아이돌",title:"앨범 특전 포카 교환 원해요",price:"교환",seller:"윤슬",time:"어제",status:"교환중",image:"/hobby-desk.png"},
+  ];
+  const shown=goods.filter(g=>(filter==="전체"||g.type===filter)&&(g.title+g.cat).includes(query));
+  return <div className="single-page market-page"><header className="market-head"><div><span className="eyebrow">GOODS MARKET</span><h1>굿즈 거래소</h1><p>같은 취향의 사람끼리 굿즈를 판매하고, 구하고, 교환해요.</p></div><button className="primary" onClick={()=>requireLogin(()=>setWriteOpen(true))}><Plus/> 거래글 올리기</button></header>
+    <div className="safe-banner"><Shield/><div><b>거래 전 꼭 확인하세요</b><span>취향사이는 결제를 중개하지 않아요. 개인정보를 먼저 보내지 말고, 의심스러운 외부 링크와 선입금 요구를 주의하세요.</span></div><button onClick={()=>toast("안전 거래 수칙을 확인했어요")}>안전수칙</button></div>
+    <div className="market-tools"><div>{["전체","판매","구해요","교환","나눔"].map(x=><button className={filter===x?"active":""} key={x} onClick={()=>setFilter(x)}>{x}</button>)}</div><label><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="굿즈 검색"/></label></div>
+    <div className="market-grid">{shown.map((g,i)=><article key={g.id}><div className={`goods-image tint${i}`}><img src={g.image} alt="굿즈 예시 이미지"/><span>{g.type}</span><button aria-label="찜하기" className={wish.includes(g.id)?"wished":""} onClick={()=>requireLogin(()=>setWish(v=>v.includes(g.id)?v.filter(x=>x!==g.id):[...v,g.id]))}><Heart fill={wish.includes(g.id)?"currentColor":"none"}/></button></div><div className="goods-copy"><small>{g.cat} · {g.time}</small><h2>{g.title}</h2><strong>{g.price}</strong><div><span><Avatar text={g.seller} size="sm"/>{g.seller}</span><i>{g.status}</i></div><button className="outline" onClick={()=>requireLogin(()=>{toast.success(`${g.seller}님과 대화를 시작했어요`);setView("messages")})}><MessageCircle/> 판매자와 대화</button></div></article>)}</div>{!shown.length&&<Empty title="찾는 굿즈가 없어요" text="다른 검색어나 거래 유형을 선택해 보세요."/>}
+    <Dialog open={writeOpen} onOpenChange={setWriteOpen}><DialogContent className="trade-form"><DialogHeader><DialogTitle>거래글 올리기</DialogTitle></DialogHeader><div className="trade-type">{["판매","구해요","교환","나눔"].map(x=><button key={x}>{x}</button>)}</div><Input placeholder="굿즈 이름"/><Input placeholder="가격 또는 교환 조건"/><Textarea placeholder="상품 상태와 거래 방법을 자세히 적어주세요"/><p>상세 주소와 계좌번호는 게시글에 작성하지 마세요.</p><Button onClick={()=>{setWriteOpen(false);toast.success("거래글을 등록했어요")}}>등록하기</Button></DialogContent></Dialog>
+  </div>;
+}
 
 function MessagesView({user,requireLogin}:{user:Viewer;requireLogin:(f:()=>void)=>void}) { const [selected,setSelected]=useState(0); const [text,setText]=useState(""); const [messages,setMessages]=useState(["어제 추천해 준 작품 봤어요!","정말 좋았죠? 마지막 장면 이야기하고 싶었어요 🙌"]); const chats=[{name:"모카별",last:"정말 좋았죠? 마지막 장면…",time:"방금",unread:2},{name:"이번 분기 애니 정주행",last:"오늘 10시에 같이 봐요!",time:"12분",unread:1},{name:"윤슬",last:"사진 색감 너무 좋아요",time:"어제",unread:0}]; const send=()=>requireLogin(()=>{if(!text.trim())return;setMessages(v=>[...v,text]);setText("");}); return <div className="message-layout"><aside><header><h1>대화</h1><button aria-label="새 대화"><Plus/></button></header><label><Search/><input placeholder="친구와 대화 검색"/></label>{chats.map((c,i)=><button className={selected===i?"active":""} key={c.name} onClick={()=>setSelected(i)}><Avatar text={c.name}/><span><b>{c.name}</b><small>{c.last}</small></span><time>{c.time}</time>{c.unread>0&&<i>{c.unread}</i>}</button>)}</aside><section className="chat-panel"><header><Avatar text={chats[selected].name}/><div><b>{chats[selected].name}</b><span>{selected===1?"커뮤니티 단체 대화 · 128명":"친구"}</span></div><button><MoreHorizontal/></button></header><div className="messages"><div className="day">오늘</div>{messages.map((m,i)=><div key={i} className={i%2?"bubble mine":"bubble"}>{m}<time>{i%2?"오후 8:42":"오후 8:39"}</time></div>)}</div><div className="message-input"><button aria-label="이미지 첨부"><ImagePlus/></button><input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={user?"메시지를 입력하세요":"로그인 후 대화할 수 있어요"}/><button className="send" onClick={send} aria-label="메시지 보내기"><Send/></button></div></section></div>; }
 
