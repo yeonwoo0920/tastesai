@@ -1072,3 +1072,61 @@ html[data-theme="dark"] .discover-page,html[data-theme="dark"] .market-page,
 html[data-theme="dark"] .record-copy b,html[data-theme="dark"] .work-list h3,
 html[data-theme="dark"] .room-list h3,html[data-theme="dark"] .goods-copy h2,
 html[data-theme="dark"] .goods-copy>strong{color:#f0f5f8 !important}
+
+/* 목록의 역할별 표면과 전역 잘림 보정 */
+html,body{max-width:100%;overflow-x:hidden}
+.app-shell,.page-wrap,.single-page,.community-home,.community-homepage,
+.community-tabs,.community-tabs>div,.inside-board-head,.inside-board-list,
+.record-zone,.work-list,.room-list,.market-sections,.market-sections>section{
+  min-width:0;
+  max-width:100%;
+}
+/* 일반 게시글에는 장식용 교차 색을 넣지 않는다. */
+.record-table article,.record-table article:nth-child(even),
+.inside-board-list>button,.inside-board-list>button:nth-child(even),
+.post-card,.post-card>header{
+  background:#fffefa !important;
+}
+.record-table article:hover,.inside-board-list>button:hover{background:#f7f9fb !important}
+/* 작품·인물 탐색만 차분한 색 면으로 구분한다. */
+.discover-page .featured-step{background:#dceaf2 !important;border-color:#8ea9bb !important}
+.discover-page .featured-work-list{background:#eef4f7 !important}
+.discover-page .featured-work-list article,
+.discover-page .featured-work-list article:nth-child(even){background:#eef4f7 !important}
+.discover-page .featured-work-list article:hover{background:#e5eff4 !important}
+/* 배경 위에 놓인 전체보기 제목은 반드시 읽히는 독립 면으로 둔다. */
+.joined-community-section{padding:0 0 2px;border-top:0}
+.joined-community-section>header{
+  margin:0 0 14px;
+  padding:16px 18px;
+  border:1px solid var(--ambient-edge);
+  background:#fffefa;
+  color:#17212b;
+}
+.joined-community-section header p{color:#59697a}
+/* 탭과 게시판 상단의 음수 마진을 제거하고 내부에서만 스크롤한다. */
+.community-tabs [role=tablist]{width:100%!important;margin:14px 0 0!important;padding:7px 7px 0!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-gutter:stable}
+.community-tabs [role=tab]{flex:0 0 auto;min-width:max-content;margin:0!important;transform:none!important;line-height:1.2}
+.community-tabs [data-state=active]{position:relative;z-index:1}
+.inside-board-head{padding:14px 16px!important;overflow:visible}
+.post-category-filter{width:100%;margin:0;overflow-x:auto;overflow-y:hidden}
+.inside-board-list{width:100%;overflow-x:auto}
+.inside-cols,.inside-board-list>button,.inside-notice{min-width:760px}
+
+html[data-theme="dark"] .record-table article,
+html[data-theme="dark"] .record-table article:nth-child(even),
+html[data-theme="dark"] .inside-board-list>button,
+html[data-theme="dark"] .inside-board-list>button:nth-child(even),
+html[data-theme="dark"] .post-card,html[data-theme="dark"] .post-card>header{background:#1d2a37 !important}
+html[data-theme="dark"] .discover-page .featured-step{background:#2d4658 !important}
+html[data-theme="dark"] .discover-page .featured-work-list,
+html[data-theme="dark"] .discover-page .featured-work-list article,
+html[data-theme="dark"] .discover-page .featured-work-list article:nth-child(even){background:#243746 !important}
+html[data-theme="dark"] .joined-community-section>header{background:#1d2a37;color:#f0f5f8}
+html[data-theme="dark"] .joined-community-section header p{color:#aebdca}
+
+@media(max-width:820px){
+  .page-wrap{width:100%;margin-inline:0;padding-inline:14px}
+  .inside-cols,.inside-board-list>button,.inside-notice{min-width:0}
+  .joined-community-section>header{padding:14px}
+}
