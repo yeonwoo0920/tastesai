@@ -30,7 +30,7 @@ export function FandomRoomView({boardName,communities,joined,onSelect,join,requi
     </section>
     <header className="room-head"><div className="room-banner-art"><CommunityArt community={community} large/><span>{work.toUpperCase()} FAN HOME</span></div>
       <div className="room-heading-copy"><small>COMMUNITY HOME · {work}</small><h1>{boardName}</h1><p>{community.desc}</p><div className="room-tags"><span>#{work.replaceAll(" ","")}</span><span>#스포표기</span><span>#다정한대화</span></div><div className="room-stats"><span>TODAY <b>{community.today}</b></span><span>MEMBER <b>{community.memberCount}</b></span></div></div>
-      <div className="board-actions"><button className="outline" onClick={()=>join(boardName)}>{joinedHere?"가입됨":"가입하기"}</button><button className="primary" onClick={write}><Plus/> 이 커뮤니티에 글쓰기</button></div>
+      <div className="board-actions"><button className="outline" onClick={()=>join(boardName)}>{joinedHere?"가입됨":"가입하기"}</button></div>
     </header>
     <Tabs defaultValue="posts" className="community-tabs"><TabsList><TabsTrigger value="home">홈</TabsTrigger><TabsTrigger value="posts">게시글</TabsTrigger><TabsTrigger value="fanwork">2차창작</TabsTrigger><TabsTrigger value="gallery">작품·사진</TabsTrigger><TabsTrigger value="members">멤버</TabsTrigger><TabsTrigger value="activity">활동</TabsTrigger><TabsTrigger value="goods">굿즈</TabsTrigger><TabsTrigger value="chat">단체 대화</TabsTrigger></TabsList>
       <TabsContent value="home"><div className="room-overview"><section><h2>이 방에서 나누는 이야기</h2><p>잡담, 감상·후기, 질문, 정보와 팬 작품을 함께 나눠요.</p></section><section><Shield/><div><h2>스포일러와 창작 규칙</h2><p>스포일러가 있는 글은 옵션을 켜고, 다른 감상과 최애를 존중해 주세요.</p></div></section></div></TabsContent>
