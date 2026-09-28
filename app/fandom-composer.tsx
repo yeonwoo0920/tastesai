@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -10,11 +11,46 @@ import { Textarea } from "@/components/ui/textarea";
 import { POST_CATEGORIES, type PostCategory } from "./post-categories";
 
 type Viewer={id:string;name:string;email:string}|null;
-type NewPost={id:string;title:string;author:string;handle:string;avatar:string;community:string;kind:string;body:string;time:string;image?:string;likes:number;comments:number;tags:string[];mine?:boolean};
+type NewPost={id:string;title:string;author:string;handle:string;avatar:string;community:string;kind:string;body:string;time:string;image?:string;likes:number;comments:number;tags:string[];spoiler?:boolean;warning?:string;mine?:boolean};
 
-export function FandomComposer({boardName,open,setOpen,user,onAdd}:{boardName:string;open:boolean;setOpen:(open:boolean)=>void;user:Viewer;onAdd:(post:NewPost)=>void}) {
-  const [title,setTitle]=useState(""); const [body,setBody]=useState(""); const [anonymous,setAnonymous]=useState(false); const [kind,setKind]=useState<PostCategory>("잡담"); const [spoiler,setSpoiler]=useState(false); const [warning,setWarning]=useState(""); const [images,setImages]=useState<string[]>([]); const [error,setError]=useState(""); const [loading,setLoading]=useState(false); const fileRef=useRef<HTMLInputElement>(null);
+export function FandomComposer({boardName,open,setOpen,user,onAdd,initialKind="잡담"}:{boardName:string;open:boolean;setOpen:(open:boolean)=>void;user:Viewer;initialKind?:string;onAdd:(post:NewPost)=>void}) {
+  const [title,setTitle]=useState(""); const [body,setBody]=useState(""); const [anonymous,setAnonymous]=useState(false); const [kind,setKind]=useState<PostCategory>(initialKind as PostCategory); const [spoiler,setSpoiler]=useState(false); const [warning,setWarning]=useState(""); const [images,setImages]=useState<string[]>([]); const [error,setError]=useState(""); const [loading,setLoading]=useState(false); const fileRef=useRef<HTMLInputElement>(null);
+
+  const draftKey=`chwihyang-draft-${boardName}${initialKind==="작품"?"-fanwork":""}`;
+
+  useEffect(()=>{
+    if(!open)return;
+    try{
+      const saved=localStorage.getItem(draftKey);
+      if(!saved)return;
+      const draft=JSON.parse(saved);
+      // Restore the browser draft when the dialog opens.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTitle(draft.title||"");
+      setBody(draft.body||"");
+      setKind(POST_CATEGORIES.includes(draft.kind)?draft.kind:initialKind as PostCategory);
+      setAnonymous(Boolean(draft.anonymous));
+      setSpoiler(Boolean(draft.spoiler));
+      setWarning(draft.warning||"");
+    }catch{}
+  },[open,draftKey,initialKind]);
+
+  const saveDraft=()=>{
+    try { localStorage.setItem(draftKey,JSON.stringify({
+      title,
+      body,
+      kind,
+      anonymous,
+      spoiler,
+      warning,
+      savedAt:Date.now()
+    }));
+    setError("");
+    toast.success("글을 임시저장했어요. 첨부 사진은 다시 선택해 주세요.");
+    } catch { setError("임시저장 공간이 부족해요. 본문을 별도로 보관해 주세요."); }
+  };
+
   const pick=(files:FileList|null)=>{if(!files)return;const list=Array.from(files).slice(0,4);if(list.some(f=>f.size>5_000_000)){setError("이미지는 한 장당 5MB 이하로 올려주세요.");return;}Promise.all(list.map(f=>new Promise<string>(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(f)}))).then(setImages)};
-  const submit=async()=>{if(!title.trim()){setError("제목을 입력해 주세요.");return;}if(!body.trim()&&!images.length){setError("내용이나 이미지 중 하나는 꼭 넣어주세요.");return;}setLoading(true);setError("");try{const response=await fetch("/api/posts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:title.trim(),body:body.trim(),community:boardName,kind,images:[],tags:["#덕질기록"],anonymous,spoiler,warning})});if(!response.ok)throw new Error("save failed");onAdd({id:crypto.randomUUID(),title:title.trim(),author:anonymous?"익명":user?.name||"나",handle:anonymous?"":"@me",avatar:anonymous?"익":user?.name||"나",community:boardName,kind,body:body.trim(),time:"방금",image:images[0],likes:0,comments:0,tags:["#덕질기록"],mine:true});setTitle("");setBody("");setImages([]);setAnonymous(false);setSpoiler(false);setWarning("");setKind("잡담")}catch{setError("업로드하지 못했어요. 잠시 후 다시 시도해 주세요.")}finally{setLoading(false)}};
-  return <Dialog open={open} onOpenChange={setOpen}><DialogContent className="composer"><DialogHeader><DialogTitle>{boardName}에 글쓰기</DialogTitle></DialogHeader><p className="composer-board">커뮤니티 · <b>{boardName}</b></p><Input value={title} onChange={e=>setTitle(e.target.value)} placeholder="제목을 입력하세요" aria-label="게시글 제목"/><select className="kind-select" value={kind} onChange={e=>setKind(e.target.value as PostCategory)} aria-label="게시글 카테고리">{POST_CATEGORIES.map(category=><option key={category}>{category}</option>)}</select><Textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="좋아하는 마음과 생각을 자유롭게 남겨보세요…" aria-label="게시글 본문"/><div className="preview-strip">{images.map((src,i)=><span key={src}><img src={src} alt={`첨부 이미지 ${i+1}`}/><button onClick={()=>setImages(v=>v.filter((_,n)=>n!==i))} aria-label="이미지 삭제"><X/></button></span>)}</div><div className="composer-options"><label><span>스포일러 포함</span><Switch checked={spoiler} onCheckedChange={setSpoiler} aria-label="스포일러 포함"/></label><label><span>익명으로 작성</span><Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="익명으로 작성"/></label></div>{spoiler&&<Input className="spoiler-note" value={warning} onChange={e=>setWarning(e.target.value)} placeholder="스포일러 주의 문구 (선택)" aria-label="스포일러 주의 문구"/>}{error&&<p className="form-error">{error}</p>}<div className="composer-bottom"><input ref={fileRef} hidden type="file" multiple accept="image/*" onChange={e=>pick(e.target.files)}/><button className="attach" onClick={()=>fileRef.current?.click()}><ImagePlus/> 사진 <small>{images.length}/4</small></button><Button onClick={submit} disabled={loading}>{loading?"올리는 중…":"게시하기"}</Button></div></DialogContent></Dialog>;
+  const submit=async()=>{if(!title.trim()){setError("제목을 입력해 주세요.");return;}if(!body.trim()&&!images.length){setError("내용이나 이미지 중 하나는 꼭 넣어주세요.");return;}setLoading(true);setError("");try{const response=await fetch("/api/posts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:title.trim(),body:body.trim(),community:boardName,kind,images:[],tags:["#덕질기록"],anonymous,spoiler,warning})});if(!response.ok)throw new Error("save failed");onAdd({id:crypto.randomUUID(),title:title.trim(),author:anonymous?"익명":user?.name||"나",handle:anonymous?"":"@me",avatar:anonymous?"익":user?.name||"나",community:boardName,kind,spoiler:spoiler||kind==="스포일러",warning,body:body.trim(),time:"방금",image:images[0],likes:0,comments:0,tags:["#덕질기록"],mine:true});localStorage.removeItem(draftKey);setTitle("");setBody("");setImages([]);setAnonymous(false);setSpoiler(false);setWarning("");setKind("잡담")}catch{setError("업로드하지 못했어요. 잠시 후 다시 시도해 주세요.")}finally{setLoading(false)}};
+  return <Dialog open={open} onOpenChange={setOpen}><DialogContent className="composer"><DialogHeader><DialogTitle>{boardName}에 {initialKind==="작품"?"창작 올리기":"글쓰기"}</DialogTitle></DialogHeader><p className="composer-board">커뮤니티 · <b>{boardName}</b></p><Input value={title} onChange={e=>setTitle(e.target.value)} placeholder="제목을 입력하세요" aria-label="게시글 제목"/><select className="kind-select" value={kind} onChange={e=>setKind(e.target.value as PostCategory)} aria-label="게시글 카테고리">{POST_CATEGORIES.map(category=><option key={category}>{category}</option>)}</select><Textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="좋아하는 마음과 생각을 자유롭게 남겨보세요…" aria-label="게시글 본문"/><div className="preview-strip">{images.map((src,i)=><span key={src}><img src={src} alt={`첨부 이미지 ${i+1}`}/><button onClick={()=>setImages(v=>v.filter((_,n)=>n!==i))} aria-label="이미지 삭제"><X/></button></span>)}</div><div className="composer-options"><label><span>스포일러 포함</span><Switch checked={spoiler} onCheckedChange={setSpoiler} aria-label="스포일러 포함"/></label><label><span>익명으로 작성</span><Switch checked={anonymous} onCheckedChange={setAnonymous} aria-label="익명으로 작성"/></label></div>{spoiler&&<Input className="spoiler-note" value={warning} onChange={e=>setWarning(e.target.value)} placeholder="스포일러 주의 문구 (선택)" aria-label="스포일러 주의 문구"/>}{error&&<p className="form-error" role="alert">{error}</p>}<div className="composer-bottom"><input ref={fileRef} hidden type="file" multiple accept="image/*" onChange={e=>pick(e.target.files)}/><button className="attach" onClick={()=>fileRef.current?.click()}><ImagePlus/> 사진 <small>{images.length}/4</small></button><button type="button" className="draft-save" onClick={saveDraft}>임시저장</button><Button onClick={submit} disabled={loading}>{loading?"올리는 중…":"게시하기"}</Button></div></DialogContent></Dialog>;
 }
