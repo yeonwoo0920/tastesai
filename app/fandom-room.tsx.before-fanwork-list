@@ -1,0 +1,80 @@
+"use client";
+
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Plus, Shield, MessageCircle, CalendarDays, ChevronDown, Check, Users, Compass, Clock3, MapPin, Heart } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { PostDetail } from "./post-detail";
+import { POST_CATEGORIES, normalizePostCategory } from "./post-categories";
+
+type RoomPost = { id:string; title:string; author:string; community:string; kind:string; time:string; likes:number; comments:number; image?:string; body?:string; spoiler?:boolean; warning?:string };
+type Community = { name:string; work:string; cat:string; members:string; memberCount:string; today:number; desc:string; color:string; accent:string };
+type RoomTab = "posts"|"fanwork"|"members"|"chat";
+type FanworkKind = "팬아트"|"팬픽·글"|"코스프레"|"커버·리믹스";
+type GalleryItem = { id:string; kind:FanworkKind; title:string; author:string; note:string };
+
+export function FandomRoomView({boardName,communities,joined,onSelect,join,requireLogin,posts,openComposer,openMarket,openMessages,openDiscover,openProfile}:{boardName:string;communities:readonly Community[];joined:string[];onSelect:(name:string)=>void;join:(name:string)=>void;requireLogin:(action:()=>void)=>void;posts:RoomPost[];openComposer:(kind?:string)=>void;openMarket:()=>void;openMessages:(communityName:string)=>void;openDiscover:()=>void;openProfile:(name:string)=>void}) {
+  const [selectedPost,setSelectedPost]=useState<RoomPost|null>(null);
+  const [selectorOpen,setSelectorOpen]=useState(false);
+  const [postCategory,setPostCategory]=useState("전체");
+  const [activeTab,setActiveTab]=useState<RoomTab>("posts");
+  const [fanworkKind,setFanworkKind]=useState<FanworkKind>("팬아트");
+  const [selectedGallery,setSelectedGallery]=useState<GalleryItem|null>(null);
+  const [joinedActivities,setJoinedActivities]=useState<string[]>([]);
+  const [wishedGoods,setWishedGoods]=useState<string[]>([]);
+  const selectorRef=useRef<HTMLDivElement>(null);
+  const joinedCommunities=communities.filter(community=>joined.includes(community.name));
+  const community=communities.find(item=>item.name===boardName) ?? joinedCommunities[0] ?? communities[0];
+  const joinedHere=joined.includes(boardName);
+  const work=community.work;
+  const roomPosts=posts.filter(post=>post.community===boardName);
+  const visiblePosts=roomPosts.filter(post=>postCategory==="전체"||normalizePostCategory(post.kind)===postCategory);
+  const fanworks:GalleryItem[]=[
+    {id:"fw1",kind:"팬아트",title:`${work} 장면 재해석`,author:"새벽책",note:`원작 · ${work}`},
+    {id:"fw2",kind:"팬아트",title:"최애 캐릭터 색연필 드로잉",author:"윤슬",note:"스포일러 없음"},
+    {id:"fw3",kind:"팬픽·글",title:"엔딩 이후의 짧은 이야기",author:"책갈피",note:"스포일러 경고"},
+    {id:"fw4",kind:"코스프레",title:"주말 의상 제작 기록",author:"밤산책",note:"제작 과정 포함"},
+    {id:"fw5",kind:"커버·리믹스",title:"메인 테마 피아노 커버",author:"모카별",note:"개인 연주"}
+  ];
+  const galleryItems:GalleryItem[]=[...fanworks.filter(item=>item.kind!=="팬픽·글"&&item.kind!=="커버·리믹스"),{id:"ph1",kind:"팬아트",title:`${work} 전시 관람 기록`,author:"파란귤",note:"회원 사진"}];
+  const activities=[
+    {id:"ra1",type:`온라인 · ${work}`,title:`${work} 같이 보기와 감상 대화`,date:"27",month:"9월",time:"9월 27일 · 오후 9:00",count:"18 / 30명",desc:"각자 공식 감상 경로로 시청한 뒤 커뮤니티 톡방에서 이야기를 나눠요."},
+    {id:"ra2",type:`오프라인 · ${work}`,title:"팬 전시 관람 동행",date:"03",month:"10월",time:"10월 3일 · 오후 2:00",count:"5 / 8명",desc:"공개된 장소에서 만나 함께 관람하고 감상을 기록해요."}
+  ];
+  const goods=[
+    {id:"rg1",type:"판매",title:`${work} 아크릴 스탠드 미개봉`,price:"24,000원",seller:"모카별",status:"판매 중"},
+    {id:"rg2",type:"교환",title:`${work} 특전 포토카드 교환`,price:"교환",seller:"윤슬",status:"교환 중"}
+  ];
+  useEffect(()=>{const close=(event:MouseEvent)=>{if(!selectorRef.current?.contains(event.target as Node))setSelectorOpen(false)};document.addEventListener("mousedown",close);return()=>document.removeEventListener("mousedown",close)},[]);
+  const write=()=>{if(!joinedHere){toast("먼저 이 커뮤니티에 가입해 주세요");return;}requireLogin(()=>openComposer(activeTab==="fanwork"?"작품":"잡담"))};
+  const roomStyle={"--room-color":community.color,"--room-accent":community.accent} as CSSProperties;
+  return <div className="single-page fandom-room community-homepage" style={roomStyle}>
+    <section className="community-switcher" ref={selectorRef}>
+      <div className="switcher-heading"><div><span>내 커뮤니티</span><small>가입한 {joinedCommunities.length}개 커뮤니티</small></div><button className="find-community" onClick={openDiscover}><Compass/> 커뮤니티 찾기</button></div>
+      {joinedCommunities.length ? <><button className="current-community" aria-haspopup="listbox" aria-expanded={selectorOpen} onClick={()=>setSelectorOpen(open=>!open)}><CommunityArt community={community}/><span><small>현재 선택된 커뮤니티</small><b>{community.name}</b><em>{community.cat}</em></span><ChevronDown className={selectorOpen?"open":""}/></button>
+      {selectorOpen&&<div className="community-picker" role="listbox" aria-label="가입한 커뮤니티 선택"><div className="picker-title"><b>커뮤니티 전환</b><small>페이지 이동 없이 바로 바뀌어요</small></div>{joinedCommunities.map(item=><button key={item.name} role="option" aria-selected={item.name===community.name} onClick={()=>{onSelect(item.name);setSelectorOpen(false)}}><CommunityArt community={item}/><span><b>{item.name}</b><small>{item.desc}</small></span>{item.name===community.name&&<Check/>}</button>)}</div>}</>:<div className="no-communities"><Users/><div><b>아직 가입한 커뮤니티가 없어요</b><p>관심 있는 작품의 커뮤니티를 찾아 가입해 보세요.</p></div><button className="primary" onClick={openDiscover}>커뮤니티 찾기</button></div>}
+    </section>
+    <header className="room-head"><div className="room-banner-art"><CommunityArt community={community} large/><span>{work.toUpperCase()} FAN HOME</span></div>
+      <div className="room-heading-copy"><small>COMMUNITY HOME · {work}</small><h1>{boardName}</h1><p>{community.desc}</p><div className="room-tags"><span>#{work.replaceAll(" ","")}</span><span>#스포표기</span><span>#다정한대화</span></div><div className="room-stats"><span>TODAY <b>{community.today}</b></span><span>MEMBER <b>{community.memberCount}</b></span></div></div>
+      <div className="board-actions"><button className="outline" onClick={()=>join(boardName)}>{joinedHere?"가입 중 · 탈퇴":"가입하기"}</button></div>
+    </header>
+    <Tabs value={activeTab} onValueChange={value=>setActiveTab(value as RoomTab)} className="community-tabs"><TabsList><TabsTrigger value="posts">게시글</TabsTrigger><TabsTrigger value="fanwork">2차창작</TabsTrigger><TabsTrigger value="members">멤버</TabsTrigger><TabsTrigger value="chat">단체 대화</TabsTrigger></TabsList>
+      <TabsContent value="posts"><div className="inside-board-head"><h2>게시글</h2><button className="primary" onClick={write}><Plus/> 글쓰기</button></div><div className="post-category-filter" aria-label="게시글 카테고리 필터">{["전체",...POST_CATEGORIES].map(category=><button key={category} aria-pressed={postCategory===category} className={postCategory===category?"active":""} onClick={()=>setPostCategory(category)}>{category}</button>)}</div><div className="inside-board-list"><div className="inside-cols"><span>말머리</span><span>제목</span><span>작성자</span><span>시간</span><span>댓글</span><span>좋아요</span></div><div className="inside-notice"><b>공지</b><span>{work} 커뮤니티 이용 규칙과 스포일러 안내</span><span>운영자</span></div>{visiblePosts.map(post=><button key={post.id} onClick={()=>setSelectedPost(post)}><span className="kind">{normalizePostCategory(post.kind)}</span><b>{post.title}</b><span>{post.author}</span><time>{post.time}</time><span>{post.comments}</span><span>{post.likes}</span></button>)}</div>
+        {!visiblePosts.length&&<p className="empty-state">이 분류에는 아직 글이 없어요. 첫 기록을 남겨보세요.</p>}
+      </TabsContent>
+      <TabsContent value="fanwork" className="fanwork-panel"><div className="inside-board-head"><div><h2>2차창작</h2><p className="fanwork-intro">이 커뮤니티의 원작을 바탕으로 만든 팬아트, 팬픽·글, 코스프레, 커버·리믹스를 나눠요.</p></div><button className="primary" onClick={write}><Plus/> 창작 올리기</button></div><div className="fanwork-categories" role="tablist" aria-label="2차창작 분류">{(["팬아트","팬픽·글","코스프레","커버·리믹스"] as FanworkKind[]).map(name=><button role="tab" aria-selected={fanworkKind===name} className={fanworkKind===name?"active":""} onClick={()=>setFanworkKind(name)} key={name}>{name}</button>)}</div><div className="gallery">{fanworks.filter(item=>item.kind===fanworkKind).map(item=><GalleryCard key={item.id} item={item} onOpen={setSelectedGallery}/>)}</div></TabsContent>
+      <TabsContent value="members"><div className="room-members">{["파란귤","모카별","윤슬","고래구름"].map((name,i)=><div key={name}><button className="member-profile" onClick={()=>openProfile(name)}><span>{name[0]}</span><span><b>{name}</b><small>{i===0?"운영자":"공통 작품 2개"}</small></span></button><button className="outline" onClick={()=>requireLogin(()=>toast.success(`${name}님에게 덕친 요청을 보냈어요`))}>덕친 요청</button></div>)}</div></TabsContent>
+      <TabsContent value="chat"><div className="room-feature-link"><MessageCircle/><div><h2>{boardName} 단체 대화</h2><p>친구 대화와 분리된 이 커뮤니티 전용 톡방으로 이동합니다.</p><small>현재 커뮤니티가 선택된 상태로 열려요.</small></div><button className="primary" onClick={()=>requireLogin(()=>openMessages(boardName))}>대화 참여</button></div></TabsContent>
+    </Tabs>
+    <PostDetail post={selectedPost} onClose={()=>setSelectedPost(null)}/>
+    <Dialog open={Boolean(selectedGallery)} onOpenChange={open=>!open&&setSelectedGallery(null)}><DialogContent className="gallery-detail"><DialogHeader><DialogTitle>{selectedGallery?.title}</DialogTitle></DialogHeader><div className="gallery-detail-art" aria-hidden="true">{selectedGallery?.kind}</div><p>{selectedGallery?.note}</p><button className="author-link" onClick={()=>selectedGallery&&openProfile(selectedGallery.author)}>작성자 · {selectedGallery?.author}</button></DialogContent></Dialog>
+    <details className="joined-community-section"><summary>가입한 커뮤니티 전체보기 · {joinedCommunities.length}개</summary><header><div><span>ALL MY COMMUNITIES</span><h2>가입한 커뮤니티 전체보기</h2><p>카드를 선택하면 위의 커뮤니티 내용이 바로 전환됩니다.</p></div><b>{joinedCommunities.length}개</b></header><div className="joined-community-grid">{joinedCommunities.map(item=><button key={item.name} className={item.name===community.name?"selected":""} onClick={()=>{onSelect(item.name);window.scrollTo({top:0,behavior:"smooth"})}}><CommunityArt community={item} large/><span className="card-copy"><small>{item.cat}</small><strong>{item.name}</strong><p>{item.desc}</p><em><Users/> 멤버 {item.members}명</em></span>{item.name===community.name&&<i><Check/> 현재 보는 중</i>}</button>)}</div></details>
+  </div>;
+}
+
+function GalleryCard({item,onOpen}:{item:GalleryItem;onOpen:(item:GalleryItem)=>void}) {
+  return <button className="gallery-card" onClick={()=>onOpen(item)}><span>{item.kind}</span><b>{item.title}</b><small>{item.author} · {item.note}</small></button>;
+}
+
+function CommunityArt({community,large=false}:{community:Community;large?:boolean}){return <span className={`community-art ${large?"large":""}`} style={{"--cover":community.color,"--accent":community.accent} as CSSProperties} role="img" aria-label={`${community.work} 커뮤니티 대표 이미지`}><span>{community.work.slice(0,1)}</span><i/><b/></span>}
