@@ -1955,11 +1955,16 @@ html[data-theme="dark"] .notification-list {
   /* The profile rail used a desktop minimum height after becoming a stacked
      mobile panel, leaving a large empty area beneath the identity details. */
   .profile-page .mini-home-body { min-height: 0; }
-  .profile-page .mini-profile-panel { padding-block: 11px; }
-  .profile-page .mini-profile-panel > .avatar.lg { width: 66px; height: 66px; margin: 7px 0 5px; font-size: 24px; }
-  .profile-page .mini-profile-panel h2 { font-size: 17px; }
-  .profile-page .mini-profile-panel .profile-follow-summary { margin: 3px 0 8px; padding: 6px 0; }
-  .profile-page .mini-profile-panel > .outline { min-height: 38px; }
+  .profile-page .mini-profile-panel { min-height: 0; padding: 7px 18px 9px; }
+  .profile-page .mini-profile-panel > .panel-label { font-size: 9px; }
+  .profile-page .mini-profile-panel > .avatar.lg { width: 54px; height: 54px; margin: 5px 0 3px; font-size: 20px; border-width: 3px; }
+  .profile-page .mini-profile-panel h2 { margin: 1px 0; font-size: 16px; }
+  .profile-page .mini-profile-panel > small { font-size: 12px; }
+  .profile-page .mini-profile-panel > p { margin: 4px 0; font-size: 12px; line-height: 1.35; }
+  .profile-page .mini-profile-panel .interest-tags:empty { display: none; }
+  .profile-page .mini-profile-panel .interest-tags { margin: 4px 0; }
+  .profile-page .mini-profile-panel .profile-follow-summary { margin: 2px 0 6px; padding: 5px 0; }
+  .profile-page .mini-profile-panel > .outline { min-height: 34px; }
 
   /* Keep the home welcome card as a quick introduction so MY POSTS appears
      in the first mobile viewport. */
