@@ -30,5 +30,6 @@ export const communities = sqliteTable("communities", {
   description: text("description").notNull(),
   color: text("color").notNull(),
   accent: text("accent").notNull(),
+  coverImage: text("cover_image"),
   createdAt: integer("created_at").notNull(),
 });
