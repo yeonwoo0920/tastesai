@@ -7,9 +7,10 @@ const trim = (value: unknown, limit: number) => typeof value === "string" ? valu
 
 export async function GET() {
   try {
+    const user = await getChatGPTUser();
     const db = env.DB;
     if (!db) return Response.json({ communities: [], unavailable: true });
-    const result = await db.prepare("SELECT id, name, work, category, description, color, accent FROM communities ORDER BY created_at DESC LIMIT 100").all<Record<string, string>>();
+    const result = await db.prepare("SELECT id, owner_user_id, name, work, category, description, color, accent FROM communities ORDER BY created_at DESC LIMIT 100").all<Record<string, string>>();
     return Response.json({ communities: result.results.map(item => ({
       id: item.id,
       name: item.name,
@@ -21,6 +22,7 @@ export async function GET() {
       members: "1",
       memberCount: "1",
       today: 0,
+      isOwner: item.owner_user_id === user?.userId,
     })) });
   } catch (error) {
     console.error("communities load failed", error);
@@ -47,9 +49,25 @@ export async function POST(request: Request) {
   try {
     await db.prepare("INSERT INTO communities (id, owner_user_id, name, work, category, description, color, accent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
       .bind(id, user.userId, name, work, category, description, color, accent, Date.now()).run();
-    return Response.json({ community: { id, name, work, cat: category, desc: description, color, accent, members: "1", memberCount: "1", today: 0 } }, { status: 201 });
+    return Response.json({ community: { id, name, work, cat: category, desc: description, color, accent, members: "1", memberCount: "1", today: 0, isOwner: true } }, { status: 201 });
   } catch (error) {
     console.error("community create failed", error);
     return Response.json({ error: "같은 이름의 커뮤니티가 이미 있거나 생성하지 못했어요." }, { status: 409 });
   }
+}
+
+export async function PATCH(request: Request) {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "로그인이 필요해요." }, { status: 401 });
+  const db = env.DB;
+  if (!db) return Response.json({ error: "저장소를 사용할 수 없어요." }, { status: 503 });
+  const input = await request.json() as CommunityInput & { id?: string };
+  const id = trim(input.id, 80);
+  const name = trim(input.name, 40), work = trim(input.work, 40), category = trim(input.category, 40), description = trim(input.description, 180);
+  if (!id || !name || !work || !category || !description) return Response.json({ error: "커뮤니티 정보를 모두 입력해 주세요." }, { status: 400 });
+  const existing = await db.prepare("SELECT id, owner_user_id, color, accent FROM communities WHERE id = ?").bind(id).first<Record<string, string>>();
+  if (!existing) return Response.json({ error: "커뮤니티를 찾을 수 없어요." }, { status: 404 });
+  if (existing.owner_user_id !== user.userId) return Response.json({ error: "만든 커뮤니티만 수정할 수 있어요." }, { status: 403 });
+  await db.prepare("UPDATE communities SET name = ?, work = ?, category = ?, description = ? WHERE id = ?").bind(name, work, category, description, id).run();
+  return Response.json({ community: { id, name, work, cat: category, desc: description, color: existing.color, accent: existing.accent, members: "1", memberCount: "1", today: 0, isOwner: true } });
 }

@@ -19,7 +19,7 @@ type Viewer = { id: string; name: string; email: string } | null;
 type View = "home" | "discover" | "mine" | "fanwork" | "activities" | "market" | "messages" | "notifications" | "profile" | "person" | "more";
 type Post = { id: string; title: string; author: string; handle: string; avatar: string; community: string; kind: string; body: string; time: string; image?: string; likes: number; comments: number; tags: string[]; liked?: boolean; saved?: boolean; spoiler?:boolean; warning?:string; mine?: boolean };
 type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
-type Community = { id?:string; name:string; work:string; cat:string; members:string; memberCount:string; today:number; desc:string; color:string; accent:string; joined?:boolean };
+type Community = { id?:string; name:string; work:string; cat:string; members:string; memberCount:string; today:number; desc:string; color:string; accent:string; joined?:boolean; isOwner?:boolean };
 
 function FreshStartDiscover(){const [field,setField]=useState("");return <section className="single-page fresh-discover"><header className="page-title"><h1>작품과 최애를 찾아보세요</h1><p>분야를 먼저 고르고, 원하는 작품이나 인물의 첫 커뮤니티를 만들어보세요.</p></header><section className="discover-step-panel"><div className="discovery-step"><span>1</span><div><h2>분야 선택</h2><p>덕질하고 싶은 콘텐츠 분야부터 골라보세요.</p></div></div><div className="category-grid fandom-fields">{categories.map(([name,desc,Icon,bg])=><button key={name} aria-pressed={field===name} className={field===name?"active":""} onClick={()=>setField(field===name?"":name)}><span style={{background:bg}}><Icon/></span><b>{name}</b><small>{desc}</small></button>)}</div></section><section className="discover-step-panel"><div className="discovery-step"><span>2</span><div><h2>{field?`${field} 커뮤니티`:"지금 많이 이야기하는 작품·인물"}</h2><p>등록된 커뮤니티가 생기면 이곳에서 둘러볼 수 있어요.</p></div></div><Empty title="아직 등록된 커뮤니티가 없어요" text="오른쪽 위의 커뮤니티 만들기 버튼으로 첫 공간을 열어보세요."/></section></section>}
 
@@ -142,6 +142,13 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
     setView("mine");
     toast.success("커뮤니티를 만들었어요");
   };
+  const updateCommunity = async (input:{id:string;name:string;work:string;category:string;description:string}) => {
+    const response = await fetch("/api/communities", {method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify(input)});
+    const result = await response.json() as {community?:Community;error?:string};
+    if (!response.ok || !result.community) throw new Error(result.error || "커뮤니티 홈을 수정하지 못했어요.");
+    setCommunities(current=>current.map(item=>item.id===result.community!.id?result.community!:item));
+    if(selectedBoard===input.name) setSelectedBoard(result.community.name);
+  };
 
   return <div className="app-shell">
     <header className="topbar">
@@ -165,6 +172,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
         join={join} requireLogin={requireLogin} posts={posts} openComposer={kind=>{setComposerKind(kind||"잡담");setComposerOpen(true)}}
         openMarket={()=>setView("market")} openMessages={communityName=>{setMessageCommunity(communityName);setView("messages")}}
         openProfile={name=>{setSelectedPerson(name);setView("person")}} initialPostId={postToOpen} onPostDetailClose={()=>setPostToOpen(null)} onTogglePost={togglePost}
+        updateCommunity={updateCommunity}
       /> : <div className="single-page"><Empty title="아직 만든 커뮤니티가 없어요" text="탐색에서 첫 커뮤니티를 만들고 이야기를 시작해 보세요." action={<button className="primary" onClick={()=>setView("discover")}>커뮤니티 만들기</button>}/></div>)}
       {view==="activities" && <ActivitiesView requireLogin={requireLogin} openActivity={()=>setActivityOpen(true)}/>}
       {view==="market" && <MarketplaceView requireLogin={requireLogin} setView={setView} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
@@ -259,7 +267,7 @@ function ActivitiesView({requireLogin,openActivity}:{requireLogin:(f:()=>void)=>
 function ActivityComposer({open,setOpen}:{open:boolean;setOpen:(open:boolean)=>void}){const [title,setTitle]=useState("");const [date,setDate]=useState("");const [mode,setMode]=useState("온라인");const [capacity,setCapacity]=useState("");const [place,setPlace]=useState("");const [description,setDescription]=useState("");const submit=()=>{if(!title.trim()||!date||!capacity.trim()||!description.trim()){toast.error("모임 제목, 일정, 정원, 소개를 입력해 주세요.");return;}toast.success("모임 제안이 등록됐어요.");setOpen(false);setTitle("");setDate("");setCapacity("");setPlace("");setDescription("")};return <Dialog open={open} onOpenChange={setOpen}><DialogContent className="activity-composer"><DialogHeader><DialogTitle>모임 제안하기</DialogTitle></DialogHeader><p>참가자가 판단할 수 있도록 일정과 진행 방식을 구체적으로 적어주세요.</p><label>모임 제목<Input value={title} onChange={e=>setTitle(e.target.value)} placeholder="예: 토요일 저녁 같이 보기"/></label><div className="activity-form-grid"><label>진행 방식<select value={mode} onChange={e=>setMode(e.target.value)}><option>온라인</option><option>오프라인</option></select></label><label>일정<input type="datetime-local" value={date} onChange={e=>setDate(e.target.value)}/></label></div><div className="activity-form-grid"><label>모집 정원<Input value={capacity} onChange={e=>setCapacity(e.target.value)} placeholder="예: 6명"/></label><label>{mode==="온라인"?"접속 방법":"만남 장소"}<Input value={place} onChange={e=>setPlace(e.target.value)} placeholder={mode==="온라인"?"예: 디스코드 음성 채널":"예: 서울 시내 공개 장소"}/></label></div><label>모임 소개<Textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="진행 내용, 준비물, 주의사항을 적어주세요."/></label>{mode==="오프라인"&&<p className="activity-safety">상세 주소는 참가자를 확인한 뒤 안내하세요.</p>}<Button onClick={submit}>모임 제안 등록</Button></DialogContent></Dialog>}
 
 function MarketplaceView({requireLogin,setView,openProfile}:{requireLogin:(f:()=>void)=>void;setView:(v:View)=>void;openProfile:(name:string)=>void}) {
-  const [hobby,setHobby]=useState("전체 분야"); const [query,setQuery]=useState(""); const [wish,setWish]=useState<string[]>([]); const [writeOpen,setWriteOpen]=useState(false);
+  const [hobby,setHobby]=useState("전체 분야"); const [query,setQuery]=useState(""); const [wish,setWish]=useState<string[]>([]); const [writeOpen,setWriteOpen]=useState(false); const [tradeType,setTradeType]=useState("판매");
   const goods=[
     {id:"g1",type:"판매",cat:"아이돌·음악",work:"LUMEN · 유진",title:"투어 한정 포토카드 3종 세트",price:"18,000원",seller:"파란귤",time:"10분 전",status:"판매 중",image:"/hobby-desk.png"},
     {id:"g2",type:"판매",cat:"애니·만화",work:"장송의 프리렌 · 페른",title:"캐릭터 아크릴 스탠드 미개봉",price:"24,000원",seller:"모카별",time:"34분 전",status:"판매 중",image:"/hobby-desk.png"},
@@ -276,7 +284,7 @@ function MarketplaceView({requireLogin,setView,openProfile}:{requireLogin:(f:()=
     <section className="market-hobbies" aria-label="분야별 굿즈"><h2>분야 선택</h2><div>{hobbySections.map(x=><button aria-pressed={hobby===x} className={hobby===x?"active":""} key={x} onClick={()=>setHobby(x)}>{x}</button>)}</div></section>
     <div className="market-tools"><label><Search/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="굿즈 검색" placeholder="작품, 캐릭터, 멤버, 굿즈 검색"/></label></div>
     <div className="market-sections">{groups.map(group=><section key={group.cat}><header><h2>{group.cat}</h2><span>{group.items.length}개의 거래글</span></header><div className="market-grid">{group.items.map((g,i)=><article key={g.id}><div className={`goods-image tint${i}`}><img src={g.image} alt="굿즈 예시 이미지"/><span>{g.type}</span><button aria-label="찜하기" className={wish.includes(g.id)?"wished":""} onClick={()=>requireLogin(()=>setWish(v=>v.includes(g.id)?v.filter(x=>x!==g.id):[...v,g.id]))}><Heart fill={wish.includes(g.id)?"currentColor":"none"}/></button></div><div className="goods-copy"><small>{g.work} · {g.time}</small><h2>{g.title}</h2><strong>{g.price}</strong><div><button className="seller-profile-link" onClick={()=>openProfile(g.seller)}><Avatar text={g.seller} size="sm"/>{g.seller} · 활동 기록 18개</button><i>{g.status}</i></div><button className="outline" onClick={()=>requireLogin(()=>{toast.success(`${g.seller}님과 대화를 시작했어요`);setView("messages")})}><MessageCircle/> 판매자와 대화</button></div></article>)}</div></section>)}</div>{!shown.length&&<Empty title="찾는 굿즈가 없어요" text="다른 작품이나 검색어를 선택해 보세요."/>}
-    <Dialog open={writeOpen} onOpenChange={setWriteOpen}><DialogContent className="trade-form"><DialogHeader><DialogTitle>거래글 올리기</DialogTitle></DialogHeader><div className="trade-type">{["판매","구해요","교환","나눔"].map(x=><button key={x}>{x}</button>)}</div><Input placeholder="굿즈 이름"/><Input placeholder="가격 또는 교환 조건"/><Textarea placeholder="상품 상태와 거래 방법을 자세히 적어주세요"/><p>상세 주소와 계좌번호는 게시글에 작성하지 마세요.</p><Button onClick={()=>{setWriteOpen(false);toast.success("거래글을 등록했어요")}}>등록하기</Button></DialogContent></Dialog>
+    <Dialog open={writeOpen} onOpenChange={setWriteOpen}><DialogContent className="trade-form"><DialogHeader><DialogTitle>거래글 올리기</DialogTitle></DialogHeader><div className="trade-type" role="radiogroup" aria-label="거래 종류">{["판매","구해요","교환","나눔"].map(x=><button type="button" role="radio" aria-checked={tradeType===x} className={tradeType===x?"active":""} key={x} onClick={()=>setTradeType(x)}>{x}</button>)}</div><Input placeholder="굿즈 이름"/><Input placeholder={tradeType==="판매"?"가격":tradeType==="나눔"?"나눔 조건":"가격 또는 교환 조건"}/><Textarea placeholder="상품 상태와 거래 방법을 자세히 적어주세요"/><p>상세 주소와 계좌번호는 게시글에 작성하지 마세요.</p><Button onClick={()=>{setWriteOpen(false);toast.success(`${tradeType} 거래글을 등록했어요`)}}>등록하기</Button></DialogContent></Dialog>
   </div>;
 }
 

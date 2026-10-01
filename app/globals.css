@@ -380,6 +380,7 @@ html[data-theme="dark"] .mood-group button{border-color:#435566;background:#1b27
 .trade-form input,.trade-form textarea{border-color:#9dbdce;background:#fff;color:#1c2b39}
 .trade-form input::placeholder,.trade-form textarea::placeholder{color:#60758a}
 .trade-form .trade-type button{border-color:#9dbdce;background:#fff;color:#1c2b39}
+.trade-form .trade-type button.active{border-color:#2e668d;background:#3d7faa;color:#fff}
 .trade-form .primary{background:#3d7faa;color:#fff;border-color:#2e668d}
 .activity-composer{background:#fffefa;color:#1c2b39}
 .activity-composer>p{margin:0;color:#50677a}
