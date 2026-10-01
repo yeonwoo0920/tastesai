@@ -21,6 +21,8 @@ type Post = { id: string; title: string; author: string; handle: string; avatar:
 type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
 type Community = { id?:string; name:string; work:string; cat:string; members:string; memberCount:string; today:number; desc:string; color:string; accent:string; joined?:boolean };
 
+function FreshStartDiscover(){return <section className="single-page fresh-discover"><header className="page-title"><h1>작품과 최애를 찾아보세요</h1><p>아직 등록된 커뮤니티가 없어요. 첫 커뮤니티를 만들어 좋아하는 이야기를 시작해 보세요.</p></header><div className="fresh-discover-empty"><Users/><h2>비어 있는 취향 공간이에요</h2><p>커뮤니티를 만든 뒤 멤버를 초대하고 첫 게시글을 남겨보세요.</p><button className="primary" onClick={()=>document.querySelector<HTMLButtonElement>(".community-create-entry button")?.click()}><Plus/> 첫 커뮤니티 만들기</button></div></section>}
+
 function CommunityCreateDiscoverView({search,setSearch,communities,joined,join,requireLogin,createCommunity,openBoard}:{search:string;setSearch:(value:string)=>void;communities:readonly Community[];joined:string[];join:(name:string)=>void;requireLogin:(action:()=>void)=>void;createCommunity:(input:{name:string;work:string;category:string;description:string})=>Promise<void>;openBoard:(name:string)=>void}) {
   const [open,setOpen]=useState(false),[name,setName]=useState(""),[work,setWork]=useState(""),[category,setCategory]=useState("애니·만화"),[description,setDescription]=useState(""),[error,setError]=useState(""),[saving,setSaving]=useState(false);
   const submit=async(event:React.FormEvent)=>{event.preventDefault();setSaving(true);setError("");try{await createCommunity({name,work,category,description});setOpen(false);setName("");setWork("");setDescription("");}catch(reason){setError(reason instanceof Error?reason.message:"커뮤니티를 만들지 못했어요.");}finally{setSaving(false)}};
@@ -31,20 +33,11 @@ const categories = [
   ["영화·드라마", "영화 · 드라마 · OTT", Clapperboard, "#edf2f8"], ["애니·만화", "애니 · 만화 · 웹툰", Sparkles, "#f3f0eb"], ["아이돌·음악", "아이돌 · 밴드 · 공연", Music2, "#f2eef4"], ["게임", "콘솔 · PC · 모바일", Gamepad2, "#edf1f7"], ["소설·독서", "소설 · 작가 · 등장인물", BookOpen, "#eef3ed"], ["배우·성우", "배우 · 성우 · 크리에이터", UserRound, "#f4f1ed"], ["2차창작", "팬아트 · 팬픽 · 코스프레", Palette, "#f0eff5"],
 ] as const;
 
-const seedCommunities: Community[] = [
-  { name: "프리렌 회차 감상방", work: "장송의 프리렌", cat: "장송의 프리렌 · 애니", members: "12.4K", memberCount: "12,428", today: 38, desc: "매주 새 회차를 보고 감상과 복선을 나눠요.", color: "#526b92", accent: "#b9d5d0", joined: true },
-  { name: "듄 원작·영화 비교방", work: "듄", cat: "듄 · 영화", members: "8.1K", memberCount: "8,147", today: 24, desc: "원작과 영화의 세계관, 인물과 장면을 깊게 이야기해요.", color: "#7c654d", accent: "#d6b982", joined: true },
-  { name: "데미안 문장 수집방", work: "데미안", cat: "데미안 · 소설", members: "5.6K", memberCount: "5,621", today: 11, desc: "마음에 남은 문장과 인물 해석을 함께 기록해요.", color: "#4f785f", accent: "#c7d7a5", joined: false },
-  { name: "원신 세계관 정리방", work: "원신", cat: "원신 · 게임", members: "3.2K", memberCount: "3,284", today: 19, desc: "지역과 인물, 퀘스트의 연결을 같이 정리해요.", color: "#5d6794", accent: "#bfc8ee", joined: false },
-] as const;
+const seedCommunities: Community[] = [];
 
 const communities = seedCommunities;
 
-const seedPosts: Post[] = [
-  { id:"p1", title:"폴이 물을 마시는 장면, 원작과 달라진 의미", author:"파란귤", handle:"@blue_tangerine", avatar:"파", community:"듄 원작·영화 비교방", kind:"감상·후기", body:"원작에서는 내면 독백으로 길게 이어지던 감정이 영화에서는 시선과 음악으로 압축된 것 같아요. 두 장면을 같이 놓고 이야기해 봐요.", time:"18분", image:"/hobby-desk.png", likes:128, comments:24, tags:["#듄", "#원작비교"] },
-  { id:"p2", title:"28화 엔딩 이후 프리렌 표정 이야기", author:"모카별", handle:"@mocca_star", avatar:"모", community:"프리렌 회차 감상방", kind:"감상·후기", spoiler:true, warning:"28화 스포일러가 포함돼요.", body:"대사보다 표정이 먼저 들어오는 장면이었어요. 28화 스포일러를 포함한 감상입니다.", time:"42분", likes:89, comments:31, tags:["#프리렌", "#회차감상"] },
-  { id:"p3", title:"폰타인 퀘스트 이후 다시 보이는 복선", author:"윤슬", handle:"@yoonseul_game", avatar:"윤", community:"원신 세계관 정리방", kind:"스포일러", body:"4막 완료 기준 스포일러가 있어요. 초반 대사와 마지막 선택을 이어서 정리했습니다.", time:"1시간", likes:247, comments:19, tags:["#원신", "#세계관"] },
-];
+const seedPosts: Post[] = [];
 
 const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["mine","내 커뮤니티",Users],["discover","탐색",Compass],["activities","함께하는 활동",CalendarDays],["market","굿즈 거래소",Bookmark],["messages","대화",MessageCircle,3],["notifications","알림",Bell,4],["profile","마이페이지",UserRound],["more","더보기",MoreHorizontal]];
 
@@ -57,7 +50,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   const [feed, setFeed] = useState("최신 글");
   const [composerKind,setComposerKind]=useState("잡담");
   const [notificationRead,setNotificationRead]=useState(false);
-  const [selectedBoard, setSelectedBoard] = useState<string>(seedCommunities[0].name);
+  const [selectedBoard, setSelectedBoard] = useState<string>("");
   const [postToOpen, setPostToOpen] = useState<string|null>(null);
   const [selectedPerson, setSelectedPerson] = useState("파란귤");
   const [messageCommunity, setMessageCommunity] = useState<string|null>(null);
@@ -86,6 +79,13 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       setCommunities(current => [...current, ...created.filter(item => !current.some(existing => existing.name === item.name))]);
     }).catch(() => { /* The built-in communities remain available when storage is unavailable. */ });
   }, []);
+
+  useEffect(() => {
+    fetch("/api/posts").then(response => response.json() as Promise<{posts?:Array<{id:string;title:string;author:string;community:string;kind:string;body:string;images?:string[];tags?:string[]}>}>).then(({posts: saved}) => {
+      if (!saved) return;
+      setPosts(saved.map(post => ({...post,handle:"",avatar:post.author,time:"방금",image:post.images?.[0],likes:0,comments:0,tags:post.tags??[]})));
+    }).catch(() => { /* An empty feed remains usable while the public feed is unavailable. */ });
+  }, []);
   const toggleTheme = () => setDarkMode(current => {
     const next = !current;
     document.documentElement.dataset.theme = next ? "dark" : "light";
@@ -106,7 +106,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   useEffect(() => {
     if (!user) return;
     fetch("/api/state").then(r => r.json() as Promise<{state?:{joined?:string[];selectedBoard?:string;posts?:Record<string,Partial<Post>>;profile?:ProfileDetails}|null}>).then(({state}) => {
-      if (state?.joined) { const migrated=(state.joined as string[]).map(name=>name==="이번 분기 애니 정주행"?seedCommunities[0].name:name==="매일 20분 독서"?seedCommunities[1].name:name); setJoined(migrated); }
+      if (state?.joined) setJoined(state.joined as string[]);
       if (state?.selectedBoard) setSelectedBoard(state.selectedBoard);
       const savedPosts = state?.posts;
       if (savedPosts) setPosts((current: Post[]) => current.map(p => savedPosts[p.id] ? {...p,...savedPosts[p.id]} : p));
@@ -156,13 +156,13 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
     <main className="page-wrap">
       {(view==="home"||view==="discover")&&<button className="community-create-quick primary" onClick={()=>{if(view==="discover"){document.querySelector<HTMLButtonElement>(".community-create-entry button")?.click();return;}setView("discover");window.setTimeout(()=>document.querySelector<HTMLButtonElement>(".community-create-entry button")?.click(),0);}}><Plus/> 커뮤니티 만들기</button>}
       {view==="home" && <CommunityHome user={profileUser} posts={posts} feed={feed} setFeed={setFeed} setView={setView} openBoard={name=>{setSelectedBoard(name);setView("mine")}} openCommunityPost={post=>{setSelectedBoard(post.community);setPostToOpen(post.id);setView("mine")}} openProfile={name=>{setSelectedPerson(name);setView("person")}} togglePost={togglePost} requireLogin={requireLogin} joined={joined} join={join}/>} 
-      {view==="discover" && <CommunityCreateDiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} requireLogin={requireLogin} createCommunity={createCommunity} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/>}
-      {view==="mine" && <FandomRoomView key={selectedBoard}
+      {view==="discover" && <><FreshStartDiscover/><CommunityCreateDiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} requireLogin={requireLogin} createCommunity={createCommunity} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/></>}
+      {view==="mine" && (communities.length ? <FandomRoomView key={selectedBoard}
         boardName={selectedBoard} communities={communities} joined={joined} onSelect={setSelectedBoard}
         join={join} requireLogin={requireLogin} posts={posts} openComposer={kind=>{setComposerKind(kind||"잡담");setComposerOpen(true)}}
         openMarket={()=>setView("market")} openMessages={communityName=>{setMessageCommunity(communityName);setView("messages")}}
         openProfile={name=>{setSelectedPerson(name);setView("person")}} initialPostId={postToOpen} onPostDetailClose={()=>setPostToOpen(null)} onTogglePost={togglePost}
-      />}
+      /> : <div className="single-page"><Empty title="아직 만든 커뮤니티가 없어요" text="탐색에서 첫 커뮤니티를 만들고 이야기를 시작해 보세요." action={<button className="primary" onClick={()=>setView("discover")}>커뮤니티 만들기</button>}/></div>)}
       {view==="activities" && <ActivitiesView requireLogin={requireLogin} openComposer={()=>{setComposerKind("잡담");setComposerOpen(true)}} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
       {view==="market" && <MarketplaceView requireLogin={requireLogin} setView={setView} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
       {view==="messages" && <MessagesView key={messageCommunity||"friends"} user={profileUser} joined={joined} requireLogin={requireLogin} initialCommunityName={messageCommunity}/>} 
