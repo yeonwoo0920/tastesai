@@ -1960,6 +1960,19 @@ html[data-theme="dark"] .notification-list {
   .profile-page .mini-profile-panel h2 { font-size: 17px; }
   .profile-page .mini-profile-panel .profile-follow-summary { margin: 3px 0 8px; padding: 6px 0; }
   .profile-page .mini-profile-panel > .outline { min-height: 38px; }
+
+  /* Keep the home welcome card as a quick introduction so MY POSTS appears
+     in the first mobile viewport. */
+  .profile-page .mini-main { padding: 12px; }
+  .profile-page .mini-feature,
+  .profile-page .room-content { min-height: 150px; }
+  .profile-page .room-content { padding: 13px 14px; }
+  .profile-page .feature-copy { margin-top: 12px; }
+  .profile-page .mini-feature h2 { margin: 3px 0; font-size: 18px; }
+  .profile-page .mini-feature p { font-size: 12px; line-height: 1.45; }
+  .profile-page .mini-shelf { margin-top: 8px; gap: 5px; }
+  .profile-page .mini-shelf span { padding: 3px 6px; font-size: 10px; }
+  .profile-page .home-post-scroll { margin-top: 12px; }
 }
 
 
