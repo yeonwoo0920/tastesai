@@ -53,14 +53,14 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   const [notificationRead,setNotificationRead]=useState(false);
   const [selectedBoard, setSelectedBoard] = useState<string>("");
   const [postToOpen, setPostToOpen] = useState<string|null>(null);
-  const [selectedPerson, setSelectedPerson] = useState("파란귤");
+  const [selectedPerson, setSelectedPerson] = useState("");
   const [messageCommunity, setMessageCommunity] = useState<string|null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [loginPromptOpen,setLoginPromptOpen] = useState(false);
-  const [profile,setProfile] = useState<ProfileDetails>(() => ({name:user?.name||"",intro:"이야기가 오래 남는 작품과 인물을 천천히 기록해요.",status:"오늘도 좋아하는 것을 오래 보기",tags:["프리렌","듄","원신","데미안"]}));
+  const [profile,setProfile] = useState<ProfileDetails>(() => ({name:user?.name||"",intro:"",status:"",tags:[]}));
   const hydrated = useRef(false);
   useEffect(()=>{window.scrollTo({top:0,behavior:"instant"});},[view]);
   const requireLogin = (action: () => void) => user ? action() : setLoginPromptOpen(true);
