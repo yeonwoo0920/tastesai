@@ -1734,11 +1734,6 @@ html[data-theme="dark"] .notification-list {
     min-width: 0;
   }
 
-  button,
-  .primary,
-  .outline,
-  .joined,
-  .login,
   input,
   select,
   textarea {
@@ -1859,7 +1854,8 @@ html[data-theme="dark"] .notification-list {
   .activity-action { gap: 8px; }
 
   .market-head { align-items: flex-start; gap: 14px; }
-  .market-head .primary { flex: 0 0 auto; }
+  .market-head h1 { font-size: 20px; white-space: nowrap; }
+  .market-head .primary { flex: 0 0 auto; min-height: 38px; padding-inline: 10px; font-size: 13px; }
   .market-tools label { min-height: 46px; }
   .market-grid article { min-width: 0; }
   .goods-copy { min-width: 0; }
@@ -1901,6 +1897,32 @@ html[data-theme="dark"] .notification-list {
   .profile-editor { max-height: calc(100dvh - 24px); overflow-y: auto; }
   .trade-type { gap: 5px; }
   .trade-type button { min-width: 0; padding-inline: 6px; }
+
+  /* Keep the compact record list readable: the metadata gets its own
+     unbroken line instead of being squeezed into a narrow desktop column. */
+  .record-table article { grid-template-columns: 62px minmax(0, 1fr) 18px; gap: 8px; min-height: 78px; }
+  .record-meta { grid-column: 2 / -1; display: flex; align-items: center; gap: 7px; min-width: 0; padding-bottom: 8px; white-space: nowrap; }
+  .record-meta button { min-width: 0; max-width: min(54vw, 210px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .record-meta time,
+  .record-meta em { flex: 0 0 auto; }
+
+  /* A cover photo is a header accent on a phone, not the entire first view. */
+  .community-homepage .room-head { gap: 0; }
+  .community-homepage .room-banner-art { min-height: 128px; height: 128px; }
+  .room-banner-art.has-cover-image .community-cover-image { height: 128px; object-fit: cover; }
+  .community-homepage .room-heading-copy { padding: 14px 16px; }
+  .community-homepage .room-heading-copy h1 { margin-block: 3px; font-size: 24px; }
+  .community-homepage .room-tags { margin: 7px 0; }
+  .community-homepage .room-stats { margin-top: 9px; }
+  .community-homepage .board-actions { padding: 0 16px 16px; }
+  .community-homepage .board-actions .joined,
+  .community-homepage .board-actions .outline { min-height: 40px; }
+
+  .mini-profile-panel { padding: 14px 18px; }
+  .mini-profile-panel > .avatar.lg { width: 76px; height: 76px; margin: 9px 0 7px; font-size: 27px; }
+  .mini-profile-panel > p:empty { display: none; }
+  .mini-profile-panel > p { margin: 9px 0; }
+  .mini-profile-panel .profile-follow-summary { margin: 4px 0 10px; padding: 7px 0; }
 }
 
 @media (max-width: 520px) {
@@ -1910,7 +1932,7 @@ html[data-theme="dark"] .notification-list {
   .market-head { padding: 15px 13px; }
   .home-heading h1,
   .page-title h1,
-  .market-head h1 { font-size: 22px; }
+  .market-head h1 { font-size: 20px; }
   .fresh-discover .room-list article,
   .discover-page .room-list article { flex-direction: column; }
   .fresh-discover .room-list article > button,
@@ -1919,6 +1941,9 @@ html[data-theme="dark"] .notification-list {
   .profile-actions { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px; }
   .post-detail-reaction { flex-wrap: wrap; }
   .post-detail-reaction button { flex: 1 1 130px; justify-content: center; }
+  .record-zone > .zone-title { display: block; max-width: none; }
+  .record-zone > .zone-title h2 { font-size: 17px !important; white-space: nowrap; }
+  .record-zone > .zone-title .plain-tabs { display: flex; margin-top: 7px; }
 }
 
 
