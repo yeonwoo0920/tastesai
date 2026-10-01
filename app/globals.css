@@ -854,8 +854,8 @@ html[data-ambient-time="night"] {
 
 /* 기본 배경은 시간대와 무관하게 밝은 종이판으로 유지한다. */
 html[data-background-mode="light"] {
-  --stage-bg: #e8f2f6;
-  --stage-border: #7f9fb2;
+  --stage-bg: #d3e8f1;
+  --stage-border: #89aabd;
   --ambient-panel: #fffefa;
   --ambient-panel-strong: #fffefa;
   --ambient-title: #d8e9f2;
