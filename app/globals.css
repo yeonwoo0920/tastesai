@@ -867,6 +867,9 @@ html[data-theme="dark"] .joined-community-section header p{color:#aebdca}
 
 /* 탐색 화면은 페이지 래퍼의 실제 폭 안에서만 배치한다. */
 .page-wrap>.fresh-discover{width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important}.fresh-discover .discover-step-panel,.fresh-discover .category-grid,.fresh-discover .room-list{width:100%;min-width:0!important;margin-inline:0!important}.fresh-discover .fandom-fields{grid-template-columns:repeat(4,minmax(0,1fr))!important}.fresh-discover .fandom-fields button{min-width:0!important;overflow:hidden}
+
+/* 말머리는 표의 열 너비가 아니라 글자 너비에 맞춘다. */
+.inside-board-list .kind,.record-kind{inline-size:fit-content!important;width:fit-content!important;min-width:0!important;justify-self:start!important;padding-inline:8px!important}
 .community-cover-image{width:102px;height:102px;object-fit:cover;border:6px solid #fff;box-shadow:0 0 0 1px color-mix(in srgb,var(--room-color) 30%,#d1dbe5),4px 4px 0 color-mix(in srgb,var(--room-color) 18%,#fff)}.cover-preview{width:100%;max-height:180px;object-fit:cover;border:1px solid #9dbdce}
 .inside-board-list .kind{display:inline-flex!important;align-items:center;justify-content:center;text-align:center}
 .inside-board-list .kind{justify-self:center;width:max-content;min-width:0;padding-inline:8px!important}
