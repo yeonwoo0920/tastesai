@@ -374,6 +374,13 @@ html[data-theme="dark"] .mood-group button{border-color:#435566;background:#1b27
 .community-create-dialog input::placeholder,.community-create-dialog textarea::placeholder{color:#60758a}
 .community-create-dialog form>.primary{background:#3d7faa;color:#fff;border-color:#2e668d}
 .community-create-dialog form>.primary:hover{background:#326f98;color:#fff}
+.primary,.primary svg{color:#fff}
+.trade-form{background:#fffefa;color:#1c2b39}
+.trade-form [data-slot="dialog-header"],.trade-form p{color:#1c2b39}
+.trade-form input,.trade-form textarea{border-color:#9dbdce;background:#fff;color:#1c2b39}
+.trade-form input::placeholder,.trade-form textarea::placeholder{color:#60758a}
+.trade-form .trade-type button{border-color:#9dbdce;background:#fff;color:#1c2b39}
+.trade-form .primary{background:#3d7faa;color:#fff;border-color:#2e668d}
 
 body,
 button,
