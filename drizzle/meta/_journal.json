@@ -15,6 +15,13 @@
       "when": 1790235089056,
       "tag": "0001_rainy_rick_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790814737089,
+      "tag": "0002_loud_silver_fox",
+      "breakpoints": true
     }
   ]
 }

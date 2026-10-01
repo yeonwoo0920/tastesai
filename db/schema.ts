@@ -20,3 +20,15 @@ export const postComments = sqliteTable("post_comments", {
   userId: text("user_id").notNull(), authorName: text("author_name").notNull(),
   body: text("body").notNull(), createdAt: integer("created_at").notNull(),
 });
+
+export const communities = sqliteTable("communities", {
+  id: text("id").primaryKey(),
+  ownerUserId: text("owner_user_id").notNull(),
+  name: text("name").notNull().unique(),
+  work: text("work").notNull(),
+  category: text("category").notNull(),
+  description: text("description").notNull(),
+  color: text("color").notNull(),
+  accent: text("accent").notNull(),
+  createdAt: integer("created_at").notNull(),
+});

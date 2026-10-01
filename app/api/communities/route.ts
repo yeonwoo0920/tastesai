@@ -1,0 +1,55 @@
+import { env } from "cloudflare:workers";
+import { getChatGPTUser } from "@/app/chatgpt-auth";
+
+type CommunityInput = { name?: string; work?: string; category?: string; description?: string };
+
+const trim = (value: unknown, limit: number) => typeof value === "string" ? value.trim().slice(0, limit) : "";
+
+export async function GET() {
+  try {
+    const db = env.DB;
+    if (!db) return Response.json({ communities: [], unavailable: true });
+    const result = await db.prepare("SELECT id, name, work, category, description, color, accent FROM communities ORDER BY created_at DESC LIMIT 100").all<Record<string, string>>();
+    return Response.json({ communities: result.results.map(item => ({
+      id: item.id,
+      name: item.name,
+      work: item.work,
+      cat: item.category,
+      desc: item.description,
+      color: item.color,
+      accent: item.accent,
+      members: "1",
+      memberCount: "1",
+      today: 0,
+    })) });
+  } catch (error) {
+    console.error("communities load failed", error);
+    return Response.json({ communities: [], unavailable: true });
+  }
+}
+
+export async function POST(request: Request) {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "로그인이 필요해요." }, { status: 401 });
+  const db = env.DB;
+  if (!db) return Response.json({ error: "저장소를 사용할 수 없어요." }, { status: 503 });
+
+  const input = await request.json() as CommunityInput;
+  const name = trim(input.name, 40);
+  const work = trim(input.work, 40);
+  const category = trim(input.category, 40);
+  const description = trim(input.description, 180);
+  if (!name || !work || !category || !description) return Response.json({ error: "커뮤니티 이름, 작품·인물, 분야, 소개를 모두 입력해 주세요." }, { status: 400 });
+
+  const id = crypto.randomUUID();
+  const color = "#53789a";
+  const accent = "#c4dce5";
+  try {
+    await db.prepare("INSERT INTO communities (id, owner_user_id, name, work, category, description, color, accent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(id, user.userId, name, work, category, description, color, accent, Date.now()).run();
+    return Response.json({ community: { id, name, work, cat: category, desc: description, color, accent, members: "1", memberCount: "1", today: 0 } }, { status: 201 });
+  } catch (error) {
+    console.error("community create failed", error);
+    return Response.json({ error: "같은 이름의 커뮤니티가 이미 있거나 생성하지 못했어요." }, { status: 409 });
+  }
+}

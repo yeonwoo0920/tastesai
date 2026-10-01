@@ -19,17 +19,26 @@ type Viewer = { id: string; name: string; email: string } | null;
 type View = "home" | "discover" | "mine" | "fanwork" | "activities" | "market" | "messages" | "notifications" | "profile" | "person" | "more";
 type Post = { id: string; title: string; author: string; handle: string; avatar: string; community: string; kind: string; body: string; time: string; image?: string; likes: number; comments: number; tags: string[]; liked?: boolean; saved?: boolean; spoiler?:boolean; warning?:string; mine?: boolean };
 type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
+type Community = { id?:string; name:string; work:string; cat:string; members:string; memberCount:string; today:number; desc:string; color:string; accent:string; joined?:boolean };
+
+function CommunityCreateDiscoverView({search,setSearch,communities,joined,join,requireLogin,createCommunity,openBoard}:{search:string;setSearch:(value:string)=>void;communities:readonly Community[];joined:string[];join:(name:string)=>void;requireLogin:(action:()=>void)=>void;createCommunity:(input:{name:string;work:string;category:string;description:string})=>Promise<void>;openBoard:(name:string)=>void}) {
+  const [open,setOpen]=useState(false),[name,setName]=useState(""),[work,setWork]=useState(""),[category,setCategory]=useState("애니·만화"),[description,setDescription]=useState(""),[error,setError]=useState(""),[saving,setSaving]=useState(false);
+  const submit=async(event:React.FormEvent)=>{event.preventDefault();setSaving(true);setError("");try{await createCommunity({name,work,category,description});setOpen(false);setName("");setWork("");setDescription("");}catch(reason){setError(reason instanceof Error?reason.message:"커뮤니티를 만들지 못했어요.");}finally{setSaving(false)}};
+  return <><DiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} openBoard={openBoard}/><div className="community-create-entry"><button className="primary" onClick={()=>requireLogin(()=>setOpen(true))}><Plus/> 커뮤니티 만들기</button></div><Dialog open={open} onOpenChange={setOpen}><DialogContent className="community-create-dialog"><DialogHeader><DialogTitle>새 커뮤니티 만들기</DialogTitle></DialogHeader><p>같은 작품이나 인물을 좋아하는 사람들이 공개적으로 이야기할 공간을 만들어요.</p><form onSubmit={submit}><label>커뮤니티 이름<Input value={name} onChange={event=>setName(event.target.value)} maxLength={40} placeholder="예: 프리렌 OST 이야기방" required/></label><label>작품 또는 인물<Input value={work} onChange={event=>setWork(event.target.value)} maxLength={40} placeholder="예: 장송의 프리렌" required/></label><label>분야<select value={category} onChange={event=>setCategory(event.target.value)}>{categories.map(([field])=><option key={field}>{field}</option>)}</select></label><label>소개<Textarea value={description} onChange={event=>setDescription(event.target.value)} maxLength={180} placeholder="어떤 이야기를 나누는 커뮤니티인지 적어주세요." required/></label>{error&&<p className="form-error">{error}</p>}<Button type="submit" disabled={saving}>{saving?"만드는 중…":"공개 커뮤니티 만들기"}</Button></form></DialogContent></Dialog></>;
+}
 
 const categories = [
   ["영화·드라마", "영화 · 드라마 · OTT", Clapperboard, "#edf2f8"], ["애니·만화", "애니 · 만화 · 웹툰", Sparkles, "#f3f0eb"], ["아이돌·음악", "아이돌 · 밴드 · 공연", Music2, "#f2eef4"], ["게임", "콘솔 · PC · 모바일", Gamepad2, "#edf1f7"], ["소설·독서", "소설 · 작가 · 등장인물", BookOpen, "#eef3ed"], ["배우·성우", "배우 · 성우 · 크리에이터", UserRound, "#f4f1ed"], ["2차창작", "팬아트 · 팬픽 · 코스프레", Palette, "#f0eff5"],
 ] as const;
 
-const communities = [
+const seedCommunities: Community[] = [
   { name: "프리렌 회차 감상방", work: "장송의 프리렌", cat: "장송의 프리렌 · 애니", members: "12.4K", memberCount: "12,428", today: 38, desc: "매주 새 회차를 보고 감상과 복선을 나눠요.", color: "#526b92", accent: "#b9d5d0", joined: true },
   { name: "듄 원작·영화 비교방", work: "듄", cat: "듄 · 영화", members: "8.1K", memberCount: "8,147", today: 24, desc: "원작과 영화의 세계관, 인물과 장면을 깊게 이야기해요.", color: "#7c654d", accent: "#d6b982", joined: true },
   { name: "데미안 문장 수집방", work: "데미안", cat: "데미안 · 소설", members: "5.6K", memberCount: "5,621", today: 11, desc: "마음에 남은 문장과 인물 해석을 함께 기록해요.", color: "#4f785f", accent: "#c7d7a5", joined: false },
   { name: "원신 세계관 정리방", work: "원신", cat: "원신 · 게임", members: "3.2K", memberCount: "3,284", today: 19, desc: "지역과 인물, 퀘스트의 연결을 같이 정리해요.", color: "#5d6794", accent: "#bfc8ee", joined: false },
 ] as const;
+
+const communities = seedCommunities;
 
 const seedPosts: Post[] = [
   { id:"p1", title:"폴이 물을 마시는 장면, 원작과 달라진 의미", author:"파란귤", handle:"@blue_tangerine", avatar:"파", community:"듄 원작·영화 비교방", kind:"감상·후기", body:"원작에서는 내면 독백으로 길게 이어지던 감정이 영화에서는 시선과 음악으로 압축된 것 같아요. 두 장면을 같이 놓고 이야기해 봐요.", time:"18분", image:"/hobby-desk.png", likes:128, comments:24, tags:["#듄", "#원작비교"] },
@@ -42,12 +51,13 @@ const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["mine","�
 export default function SocialApp({ user, signInPath, signOutPath }: { user: Viewer; signInPath: string; signOutPath: string }) {
   const [view, setView] = useState<View>("home");
   const [posts, setPosts] = useState(seedPosts);
+  const [communities, setCommunities] = useState<Community[]>(seedCommunities);
   const [joined, setJoined] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [feed, setFeed] = useState("최신 글");
   const [composerKind,setComposerKind]=useState("잡담");
   const [notificationRead,setNotificationRead]=useState(false);
-  const [selectedBoard, setSelectedBoard] = useState<string>(communities[0].name);
+  const [selectedBoard, setSelectedBoard] = useState<string>(seedCommunities[0].name);
   const [postToOpen, setPostToOpen] = useState<string|null>(null);
   const [selectedPerson, setSelectedPerson] = useState("파란귤");
   const [messageCommunity, setMessageCommunity] = useState<string|null>(null);
@@ -69,6 +79,13 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
     setDarkMode(dark);
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }, []);
+
+  useEffect(() => {
+    fetch("/api/communities").then(response => response.json() as Promise<{communities?:Community[]}>).then(({communities: created}) => {
+      if (!created?.length) return;
+      setCommunities(current => [...current, ...created.filter(item => !current.some(existing => existing.name === item.name))]);
+    }).catch(() => { /* The built-in communities remain available when storage is unavailable. */ });
+  }, []);
   const toggleTheme = () => setDarkMode(current => {
     const next = !current;
     document.documentElement.dataset.theme = next ? "dark" : "light";
@@ -89,8 +106,8 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   useEffect(() => {
     if (!user) return;
     fetch("/api/state").then(r => r.json() as Promise<{state?:{joined?:string[];selectedBoard?:string;posts?:Record<string,Partial<Post>>;profile?:ProfileDetails}|null}>).then(({state}) => {
-      if (state?.joined) { const migrated=(state.joined as string[]).map(name=>name==="이번 분기 애니 정주행"?communities[0].name:name==="매일 20분 독서"?communities[1].name:name).filter(name=>communities.some(c=>c.name===name)); setJoined(migrated); }
-      if (state?.selectedBoard && communities.some(c=>c.name===state.selectedBoard)) setSelectedBoard(state.selectedBoard);
+      if (state?.joined) { const migrated=(state.joined as string[]).map(name=>name==="이번 분기 애니 정주행"?seedCommunities[0].name:name==="매일 20분 독서"?seedCommunities[1].name:name); setJoined(migrated); }
+      if (state?.selectedBoard) setSelectedBoard(state.selectedBoard);
       const savedPosts = state?.posts;
       if (savedPosts) setPosts((current: Post[]) => current.map(p => savedPosts[p.id] ? {...p,...savedPosts[p.id]} : p));
       if (state?.profile?.name) setProfile(state.profile);
@@ -112,6 +129,16 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   const filteredCommunities = useMemo(() => communities.filter(c => (c.name+c.cat+c.desc).toLowerCase().includes(search.toLowerCase())), [search]);
   const togglePost = (id:string, key:"liked"|"saved") => requireLogin(() => setPosts(p => p.map(x => x.id===id ? {...x,[key]:!x[key], likes:key==="liked" ? x.likes+(x.liked?-1:1) : x.likes} : x)));
   const join = (name:string) => requireLogin(() => { const leaving=joined.includes(name); setJoined(v => leaving ? v.filter(x=>x!==name) : [...v,name]); if(leaving&&selectedBoard===name){const next=joined.find(x=>x!==name);if(next)setSelectedBoard(next);} toast(leaving?"커뮤니티에서 탈퇴했어요":"커뮤니티에 가입했어요"); });
+  const createCommunity = async (input:{name:string;work:string;category:string;description:string}) => {
+    const response = await fetch("/api/communities", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(input)});
+    const result = await response.json() as {community?:Community;error?:string};
+    if (!response.ok || !result.community) throw new Error(result.error || "커뮤니티를 만들지 못했어요.");
+    setCommunities(current => [result.community!, ...current]);
+    setJoined(current => current.includes(result.community!.name) ? current : [...current, result.community!.name]);
+    setSelectedBoard(result.community.name);
+    setView("mine");
+    toast.success("커뮤니티를 만들었어요");
+  };
 
   return <div className="app-shell">
     <header className="topbar">
@@ -128,7 +155,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
 
     <main className="page-wrap">
       {view==="home" && <CommunityHome user={profileUser} posts={posts} feed={feed} setFeed={setFeed} setView={setView} openBoard={name=>{setSelectedBoard(name);setView("mine")}} openCommunityPost={post=>{setSelectedBoard(post.community);setPostToOpen(post.id);setView("mine")}} openProfile={name=>{setSelectedPerson(name);setView("person")}} togglePost={togglePost} requireLogin={requireLogin} joined={joined} join={join}/>} 
-      {view==="discover" && <DiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/>}
+      {view==="discover" && <CommunityCreateDiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} requireLogin={requireLogin} createCommunity={createCommunity} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/>}
       {view==="mine" && <FandomRoomView key={selectedBoard}
         boardName={selectedBoard} communities={communities} joined={joined} onSelect={setSelectedBoard}
         join={join} requireLogin={requireLogin} posts={posts} openComposer={kind=>{setComposerKind(kind||"잡담");setComposerOpen(true)}}

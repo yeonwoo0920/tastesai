@@ -826,6 +826,7 @@ html[data-theme="dark"] .joined-community-section header p{color:#aebdca}
    ========================================================= */
 
 :root {
+.community-create-entry{display:flex;justify-content:flex-end;max-width:1320px;margin:-2px auto 18px;padding:0 24px}.community-create-entry .primary{display:inline-flex;align-items:center;gap:7px}.community-create-dialog form{display:grid;gap:14px;margin-top:8px}.community-create-dialog label{display:grid;gap:7px;color:var(--ink);font-weight:700}.community-create-dialog select{height:42px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--ink);padding:0 12px;font:inherit}.community-create-dialog textarea{min-height:106px;resize:vertical}.community-create-dialog form>.primary{justify-content:center;margin-top:4px}@media(max-width:820px){.community-create-entry{padding:0 14px;margin-bottom:14px}.community-create-entry .primary{width:100%;justify-content:center}}
   --stage-bg: #dce7ee;
   --stage-border: #9fb5c5;
   --stage-inner: #fffefa;
