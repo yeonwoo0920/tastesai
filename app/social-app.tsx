@@ -167,7 +167,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       {view==="activities" && <ActivitiesView requireLogin={requireLogin} openComposer={()=>{setComposerKind("잡담");setComposerOpen(true)}} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
       {view==="market" && <MarketplaceView requireLogin={requireLogin} setView={setView} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
       {view==="messages" && <MessagesView key={messageCommunity||"friends"} user={profileUser} joined={joined} requireLogin={requireLogin} initialCommunityName={messageCommunity}/>} 
-      {view==="notifications" && <NotificationsView setView={setView} read={notificationRead} markRead={()=>setNotificationRead(true)}/>}
+      {view==="notifications" && <NotificationsView read={notificationRead} markRead={()=>setNotificationRead(true)}/>}
       {view==="profile" && <FandomProfile openSection={section=>setView(section)} joinedCount={joined.length} posts={posts} user={profileUser} profile={profile} onSaveProfile={setProfile} signInPath={signInPath} signOutPath={signOutPath} openMessages={()=>{setMessageCommunity(null);setView("messages")}}/>} 
       {view==="person" && <FandomPublicProfile name={selectedPerson} openMessages={()=>requireLogin(()=>setView("messages"))} requireLogin={requireLogin}/>}
       {view==="more" && <MoreView setView={setView}/>}
@@ -276,11 +276,7 @@ function MarketplaceView({requireLogin,setView,openProfile}:{requireLogin:(f:()=
 }
 
 function MessagesView({user,requireLogin,initialCommunityName=null,joined=[]}:{user:Viewer;requireLogin:(f:()=>void)=>void;initialCommunityName?:string|null;joined?:string[]}) {
-  const friendChats=[
-    {name:"모카별",last:"정말 좋았죠? 마지막 장면…",time:"방금",unread:2,sub:"친구"},
-    {name:"이번 분기 애니 정주행",last:"오늘 10시에 같이 봐요!",time:"12분",unread:1,sub:"친구 단톡방 · 4명"},
-    {name:"윤슬",last:"사진 색감 너무 좋아요",time:"어제",unread:0,sub:"친구"}
-  ];
+  const friendChats: {name:string;last:string;time:string;unread:number;sub:string}[]=[];
 
   const communityChats=communities.filter(c=>joined.includes(c.name)).map(c=>({name:c.name,last:`${c.work} 이야기를 나눠요`,time:"",unread:0,sub:"커뮤니티 단체 대화"}));
 
@@ -386,7 +382,7 @@ function MessagesView({user,requireLogin,initialCommunityName=null,joined=[]}:{u
   </div>;
 }
 
-function NotificationsView({setView,read,markRead}:{setView:(v:View)=>void;read:boolean;markRead:()=>void}) { const [request,setRequest]=useState(""); const notes=[{icon:Heart,title:"파란귤님이 회원님의 게시글을 좋아해요.",sub:"오늘의 드로잉 기록",time:"5분"},{icon:Users,title:"모카별님이 친구 요청을 보냈어요.",sub:"같은 취향 친구가 되어보세요.",time:"23분",actions:true},{icon:MessageCircle,title:"새 댓글이 달렸어요.",sub:"이 장면 저도 정말 좋아해요!",time:"1시간"},{icon:CalendarDays,title:"참여 중인 활동 시간이 변경됐어요.",sub:"30분 드로잉 · 금요일 오후 9:00",time:"3시간"}]; return <div className="single-page narrow"><header className="page-title row"><div><span className="eyebrow">NOTIFICATIONS</span><h1>알림</h1></div><button className="outline" onClick={markRead} disabled={read}>{read?"모두 읽었어요":"모두 읽음"}</button></header><div className="notification-list">{notes.map((n,i)=><article key={n.title} className={!read?"unread":""} onClick={()=>setView(i===1?"profile":i===3?"activities":"home")}><span className="note-icon"><n.icon/></span><div><b>{n.title}</b><p>{n.sub}</p><small>{n.time} 전</small>{n.actions&&!request&&<div className="request-actions"><button className="primary" onClick={e=>{e.stopPropagation();setRequest("수락했어요")}}>수락</button><button className="outline" onClick={e=>{e.stopPropagation();setRequest("거절했어요")}}>거절</button></div>}{n.actions&&request&&<p role="status">친구 요청을 {request}</p>}</div></article>)}</div></div>; }
+function NotificationsView({read,markRead}:{read:boolean;markRead:()=>void}) { return <div className="single-page narrow"><header className="page-title row"><div><span className="eyebrow">NOTIFICATIONS</span><h1>알림</h1></div><button className="outline" onClick={markRead} disabled={read}>{read?"모두 읽었어요":"모두 읽음"}</button></header><div className="notification-list"><p className="record-empty">아직 받은 알림이 없어요.</p></div></div>; }
 
 function PublicProfileView({name,posts,requireLogin,setView}:{name:string;posts:Post[];requireLogin:(f:()=>void)=>void;setView:(v:View)=>void}) { const [requested,setRequested]=useState(false); const visible=posts.filter(p=>p.author===name||p.id==="p1").slice(0,3); return <div className="single-page person-page"><button className="profile-back" onClick={()=>setView("home")}>← 홈으로</button><section className="public-profile-head"><Avatar text={name} size="lg"/><div><small>@{name==="파란귤"?"blue_tangerine":"mocca_star"}</small><h1>{name}</h1><p>좋아하는 장면과 문장을 오래 기록하고 싶어요. 취향이 맞는 사람과 천천히 친해지는 중입니다.</p><div className="interest-tags"><span>독서</span><span>애니메이션</span><span>사진</span></div></div><div className="profile-actions"><button className={requested?"joined":"primary"} onClick={()=>requireLogin(()=>{setRequested(true);toast.success("친구 요청을 보냈어요")})}>{requested?<><Check/> 요청 보냄</>:<><Users/> 친구 요청</>}</button><button className="outline" onClick={()=>requireLogin(()=>setView("messages"))}><MessageCircle/> 대화 시작</button><button className="icon-only" aria-label="사용자 차단" onClick={()=>toast("차단 여부를 확인하는 화면으로 연결돼요")}><Shield/></button></div></section><div className="relationship-summary"><div><b>2개</b><span>공통 취미</span></div><div><b>1개</b><span>함께 가입한 커뮤니티</span></div><div><b>18개</b><span>공개 덕질 기록</span></div></div><section className="public-records"><div className="zone-title"><div><h2>{name}님의 덕질 기록</h2><span>커뮤니티에 남긴 공개 기록</span></div></div>{visible.map(p=><article key={p.id}><span className="kind">{p.kind}</span><div><small>{p.community} · {p.time} 전</small><h3>{p.title}</h3><p>{p.body}</p></div><span>♥ {p.likes}</span></article>)}</section><button className="block-link" onClick={()=>toast("사용자 신고·차단 관리 화면입니다")}><Flag/> 신고 또는 차단</button></div>; }
 
