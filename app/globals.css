@@ -365,6 +365,16 @@ html[data-theme="dark"] .mood-group button{border-color:#435566;background:#1b27
   --readable-muted: #59697a;
 }
 
+/* 생성 모달은 풍경 레이어와 분리해 입력 대비를 유지한다. */
+.community-create-dialog{background:#fffefa;color:#1c2b39}
+.community-create-dialog [data-slot="dialog-header"]{color:#1c2b39}
+.community-create-dialog p{color:#42576a}
+.community-create-dialog label{color:#1c2b39}
+.community-create-dialog input,.community-create-dialog textarea,.community-create-dialog select{border-color:#9dbdce;background:#fff;color:#1c2b39}
+.community-create-dialog input::placeholder,.community-create-dialog textarea::placeholder{color:#60758a}
+.community-create-dialog form>.primary{background:#3d7faa;color:#fff;border-color:#2e668d}
+.community-create-dialog form>.primary:hover{background:#326f98;color:#fff}
+
 body,
 button,
 input,
