@@ -1,9 +1,0 @@
-[build]
-  command = "mkdir -p netlify-proxy"
-  publish = "netlify-proxy"
-
-[[redirects]]
-  from = "/*"
-  to = "https://chwihyang-sai.yeonwoo07.chatgpt.site/:splat"
-  status = 200
-  force = true
