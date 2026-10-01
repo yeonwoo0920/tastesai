@@ -84,11 +84,11 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   }, []);
 
   useEffect(() => {
-    fetch("/api/posts").then(response => response.json() as Promise<{posts?:Array<{id:string;title:string;author:string;community:string;kind:string;body:string;images?:string[];tags?:string[]}>}>).then(({posts: saved}) => {
+    fetch("/api/posts").then(response => response.json() as Promise<{posts?:Array<{id:string;userId?:string;title:string;author:string;community:string;kind:string;body:string;images?:string[];tags?:string[]}>}>).then(({posts: saved}) => {
       if (!saved) return;
-      setPosts(saved.map(post => ({...post,handle:"",avatar:post.author,time:"방금",image:post.images?.[0],likes:0,comments:0,tags:post.tags??[]})));
+      setPosts(saved.map(post => ({...post,author:post.userId===user?.id?(profile.name||post.author):post.author,handle:"",avatar:post.userId===user?.id?(profile.name||post.author):post.author,time:"방금",image:post.images?.[0],likes:0,comments:0,tags:post.tags??[],mine:post.userId===user?.id})));
     }).catch(() => { /* An empty feed remains usable while the public feed is unavailable. */ });
-  }, []);
+  }, [profile.name, user?.id]);
   const toggleTheme = () => setDarkMode(current => {
     const next = !current;
     document.documentElement.dataset.theme = next ? "dark" : "light";

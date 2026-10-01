@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const db = env.DB;
     if (!db) return Response.json({ posts: [], unavailable: true });
-    const result = await db.prepare("SELECT id, author_name as author, community, kind, title, body, images, tags, created_at as createdAt FROM public_posts ORDER BY created_at DESC LIMIT 40").all();
+    const result = await db.prepare("SELECT id, user_id as userId, author_name as author, community, kind, title, body, images, tags, created_at as createdAt FROM public_posts ORDER BY created_at DESC LIMIT 40").all();
     return Response.json({ posts: result.results.map((p: Record<string, unknown>) => ({ ...p, images: JSON.parse(String(p.images)), tags: JSON.parse(String(p.tags)) })) });
   } catch (error) {
     console.error("posts load failed", error);
