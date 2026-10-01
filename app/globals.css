@@ -1344,14 +1344,9 @@ html[data-theme="dark"] .notification-list {
 }
 
 
-/* DISCOVER — 상위 제목판 은은한 하늘색 그라데이션 */
+/* DISCOVER — 큰 항목 제목판은 공통 하늘색으로 통일 */
 .discover-page .discovery-step {
-  background: linear-gradient(
-    135deg,
-    #cbe1eb 0%,
-    #d9e9f1 55%,
-    #e3edf3 100%
-  ) !important;
+  background: var(--ambient-title) !important;
 }
 
 
