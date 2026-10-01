@@ -1944,6 +1944,22 @@ html[data-theme="dark"] .notification-list {
   .record-zone > .zone-title { display: block; max-width: none; }
   .record-zone > .zone-title h2 { font-size: 17px !important; white-space: nowrap; }
   .record-zone > .zone-title .plain-tabs { display: flex; margin-top: 7px; }
+
+  /* These two compact introduction panels are read as a single label and
+     caption on phones, so reserve a full line for each rather than wrapping. */
+  .fresh-discover .page-title h1,
+  .home-heading h1 { font-size: 20px; letter-spacing: -.065em; white-space: nowrap; }
+  .fresh-discover .page-title p,
+  .home-heading p { font-size: 10px; letter-spacing: -.055em; white-space: nowrap; }
+
+  /* The profile rail used a desktop minimum height after becoming a stacked
+     mobile panel, leaving a large empty area beneath the identity details. */
+  .profile-page .mini-home-body { min-height: 0; }
+  .profile-page .mini-profile-panel { padding-block: 11px; }
+  .profile-page .mini-profile-panel > .avatar.lg { width: 66px; height: 66px; margin: 7px 0 5px; font-size: 24px; }
+  .profile-page .mini-profile-panel h2 { font-size: 17px; }
+  .profile-page .mini-profile-panel .profile-follow-summary { margin: 3px 0 8px; padding: 6px 0; }
+  .profile-page .mini-profile-panel > .outline { min-height: 38px; }
 }
 
 
