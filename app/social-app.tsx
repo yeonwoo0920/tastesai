@@ -165,13 +165,13 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
 
     <main className="page-wrap">
       {(view==="home"||view==="discover")&&<button className="community-create-quick primary" onClick={()=>{if(view==="discover"){document.querySelector<HTMLButtonElement>(".community-create-entry button")?.click();return;}setView("discover");window.setTimeout(()=>document.querySelector<HTMLButtonElement>(".community-create-entry button")?.click(),0);}}><Plus/> 커뮤니티 만들기</button>}
-      {view==="home" && <CommunityHome user={profileUser} posts={posts} feed={feed} setFeed={setFeed} setView={setView} openBoard={name=>{setSelectedBoard(name);setView("mine")}} openCommunityPost={post=>{setSelectedBoard(post.community);setPostToOpen(post.id);setView("mine")}} openProfile={name=>{setSelectedPerson(name);setView("person")}} togglePost={togglePost} requireLogin={requireLogin} joined={joined} join={join}/>} 
+      {view==="home" && <CommunityHome user={profileUser} posts={posts} feed={feed} setFeed={setFeed} setView={setView} openBoard={name=>{setSelectedBoard(name);setView("mine")}} openCommunityPost={post=>{setSelectedBoard(post.community);setPostToOpen(post.id);setView("mine")}} openProfile={name=>{if(name===profileUser?.name)setView("profile");else{setSelectedPerson(name);setView("person")}}} togglePost={togglePost} requireLogin={requireLogin} joined={joined} join={join}/>} 
       {view==="discover" && <><FreshStartDiscover search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/><CommunityCreateDiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} requireLogin={requireLogin} createCommunity={createCommunity} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/></>}
       {view==="mine" && (communities.length ? <FandomRoomView key={selectedBoard}
         boardName={selectedBoard} communities={communities} joined={joined} onSelect={setSelectedBoard}
         join={join} requireLogin={requireLogin} posts={posts} openComposer={kind=>{setComposerKind(kind||"잡담");setComposerOpen(true)}}
         openMarket={()=>setView("market")} openMessages={communityName=>{setMessageCommunity(communityName);setView("messages")}}
-        openProfile={name=>{setSelectedPerson(name);setView("person")}} initialPostId={postToOpen} onPostDetailClose={()=>setPostToOpen(null)} onTogglePost={togglePost}
+        openProfile={name=>{if(name===profileUser?.name)setView("profile");else{setSelectedPerson(name);setView("person")}}} initialPostId={postToOpen} onPostDetailClose={()=>setPostToOpen(null)} onTogglePost={togglePost}
         updateCommunity={updateCommunity}
       /> : <div className="single-page"><Empty title="아직 만든 커뮤니티가 없어요" text="탐색에서 첫 커뮤니티를 만들고 이야기를 시작해 보세요." action={<button className="primary" onClick={()=>setView("discover")}>커뮤니티 만들기</button>}/></div>)}
       {view==="activities" && <ActivitiesView requireLogin={requireLogin} openActivity={()=>setActivityOpen(true)}/>}
