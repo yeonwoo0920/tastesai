@@ -854,8 +854,8 @@ html[data-ambient-time="night"] {
 
 /* 기본 배경은 시간대와 무관하게 밝은 종이판으로 유지한다. */
 html[data-background-mode="light"] {
-  --stage-bg: #d8e7ef;
-  --stage-border: #91b2c5;
+  --stage-bg: #e8f2f6;
+  --stage-border: #7f9fb2;
   --ambient-panel: #fffefa;
   --ambient-panel-strong: #fffefa;
   --ambient-title: #e6f3f8;
@@ -1348,9 +1348,9 @@ html[data-theme="dark"] .notification-list {
 .discover-page .discovery-step {
   background: linear-gradient(
     135deg,
-    #d8eaf4 0%,
-    #e8f2f6 55%,
-    #eef0f7 100%
+    #bddbea 0%,
+    #cfe5f0 55%,
+    #dce9f1 100%
   ) !important;
 }
 
