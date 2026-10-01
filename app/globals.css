@@ -873,6 +873,7 @@ html[data-theme="dark"] .joined-community-section header p{color:#aebdca}
 
 /* 탐색 단계 안내는 제목만 담는 낮은 헤더로 유지한다. */
 .fresh-discover .discover-step-panel .discovery-step{min-height:0!important;padding:10px 20px!important}.fresh-discover .discover-step-panel .discovery-step h2{font-size:17px!important;line-height:1.25!important}.fresh-discover .discover-step-panel .discovery-step p{margin-top:2px!important;font-size:13px!important;line-height:1.4!important}
+.fresh-discover .fandom-fields>button:last-child{grid-column:3 / span 2!important}
 .community-cover-image{width:102px;height:102px;object-fit:cover;border:6px solid #fff;box-shadow:0 0 0 1px color-mix(in srgb,var(--room-color) 30%,#d1dbe5),4px 4px 0 color-mix(in srgb,var(--room-color) 18%,#fff)}.cover-preview{width:100%;max-height:180px;object-fit:cover;border:1px solid #9dbdce}
 .inside-board-list .kind{display:inline-flex!important;align-items:center;justify-content:center;text-align:center}
 .inside-board-list .kind{justify-self:center;width:max-content;min-width:0;padding-inline:8px!important}
