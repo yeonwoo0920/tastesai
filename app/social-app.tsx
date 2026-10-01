@@ -18,7 +18,7 @@ import { WeatherAmbient } from "./weather-ambient";
 type Viewer = { id: string; name: string; email: string } | null;
 type View = "home" | "discover" | "mine" | "fanwork" | "activities" | "market" | "messages" | "notifications" | "profile" | "person" | "more";
 type Post = { id: string; title: string; author: string; handle: string; avatar: string; community: string; kind: string; body: string; time: string; image?: string; likes: number; comments: number; tags: string[]; liked?: boolean; saved?: boolean; spoiler?:boolean; warning?:string; mine?: boolean };
-type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
+type ProfileDetails = { name:string; intro:string; status:string; tags:string[]; avatarImage?:string };
 type Community = { id?:string; name:string; work:string; cat:string; members:string; memberCount:string; today:number; desc:string; color:string; accent:string; coverImage?:string; joined?:boolean; isOwner?:boolean };
 type ActivityProposal = { id:string; title:string; date:string; mode:"온라인"|"오프라인"; capacity:string; place:string; description:string; author:string; joined?:boolean };
 
