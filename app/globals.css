@@ -381,6 +381,14 @@ html[data-theme="dark"] .mood-group button{border-color:#435566;background:#1b27
 .trade-form input::placeholder,.trade-form textarea::placeholder{color:#60758a}
 .trade-form .trade-type button{border-color:#9dbdce;background:#fff;color:#1c2b39}
 .trade-form .primary{background:#3d7faa;color:#fff;border-color:#2e668d}
+.activity-composer{background:#fffefa;color:#1c2b39}
+.activity-composer>p{margin:0;color:#50677a}
+.activity-composer label{display:grid;gap:6px;color:#1c2b39;font-weight:700}
+.activity-composer input,.activity-composer textarea,.activity-composer select{width:100%;border:1px solid #9dbdce;border-radius:5px;background:#fff;color:#1c2b39;padding:10px}
+.activity-composer textarea{min-height:130px;resize:vertical}
+.activity-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.activity-safety{padding:10px 12px;border:1px solid #d9b78d;border-radius:5px;background:#fff8e8!important;color:#704d1f!important}
+@media(max-width:620px){.activity-form-grid{grid-template-columns:1fr}}
 
 body,
 button,
