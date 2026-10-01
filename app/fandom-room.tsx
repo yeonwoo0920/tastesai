@@ -16,13 +16,7 @@ type FanworkKind = "팬아트"|"팬픽·글"|"코스프레"|"커버·리믹스";
 type FanworkFilter = FanworkKind|"인기글";
 type SecretRoom = { id:string; name:string; password:string; description:string };
 const POST_FILTER_CATEGORIES = POST_CATEGORIES.filter(category=>category!=="작품"&&category!=="스포일러");
-const makeFanworkPosts=(work:string,community:string):RoomPost[]=>[
-  {id:`${community}-fanwork-1`,community,kind:"팬아트",title:`${work} 장면 재해석`,author:"새벽책",time:"18분",likes:92,comments:14,body:`${work}에서 오래 남았던 장면을 제 색으로 다시 그려 봤어요. 원작의 분위기를 해치지 않도록 색감과 표정을 조심해서 잡았습니다.`},
-  {id:`${community}-fanwork-2`,community,kind:"팬아트",title:"최애 캐릭터 색연필 드로잉",author:"윤슬",time:"1시간",likes:76,comments:9,body:"색연필로 가볍게 남긴 드로잉이에요. 좋아하는 장면의 온도를 담아 보고 싶었습니다."},
-  {id:`${community}-fanwork-3`,community,kind:"팬픽·글",title:"엔딩 이후의 짧은 이야기",author:"책갈피",time:"3시간",likes:54,comments:21,body:"엔딩 이후를 상상하며 쓴 짧은 글입니다. 원작 이후의 감정을 천천히 이어가 보고 싶었어요."},
-  {id:`${community}-fanwork-4`,community,kind:"코스프레",title:"주말 의상 제작 기록",author:"밤산책",time:"어제",likes:41,comments:7,body:"주말 동안 만든 의상 제작 기록입니다. 원단 선택부터 작은 장식까지 차근차근 정리했어요."},
-  {id:`${community}-fanwork-5`,community,kind:"커버·리믹스",title:"메인 테마 피아노 커버",author:"모카별",time:"어제",likes:69,comments:11,body:"좋아하는 메인 테마를 피아노로 편곡해 봤어요. 원곡의 조용한 분위기를 살리는 데 집중했습니다."}
-];
+const makeFanworkPosts=(_work:string,_community:string):RoomPost[]=>[];
 
 export function FandomRoomView({boardName,communities,joined,onSelect,join,requireLogin,posts,openComposer,openMarket,openMessages,openProfile,initialPostId,onPostDetailClose,onTogglePost}:{boardName:string;communities:readonly Community[];joined:string[];onSelect:(name:string)=>void;join:(name:string)=>void;requireLogin:(action:()=>void)=>void;posts:RoomPost[];openComposer:(kind?:string)=>void;openMarket:()=>void;openMessages:(communityName:string)=>void;openProfile:(name:string)=>void;initialPostId?:string|null;onPostDetailClose?:()=>void;onTogglePost:(id:string,key:"liked"|"saved")=>void}) {
   const [selectedPostId,setSelectedPostId]=useState<string|null>(initialPostId??null);
@@ -51,14 +45,8 @@ export function FandomRoomView({boardName,communities,joined,onSelect,join,requi
   const hotThreshold=Math.ceil(Number(community.memberCount.replace(/[^0-9]/g,""))*0.15);
   const visiblePosts=roomPosts.filter(post=>postCategory==="전체"||postCategory==="인기글"&&post.likes>=hotThreshold||normalizePostCategory(post.kind)===postCategory);
   const visibleFanworkPosts=fanworkPosts.filter(post=>fanworkKind==="인기글"||post.kind===fanworkKind).sort((a,b)=>fanworkKind==="인기글"?b.likes-a.likes:0);
-  const activities=[
-    {id:"ra1",type:`온라인 · ${work}`,title:`${work} 같이 보기와 감상 대화`,date:"27",month:"9월",time:"9월 27일 · 오후 9:00",count:"18 / 30명",desc:"각자 공식 감상 경로로 시청한 뒤 커뮤니티 톡방에서 이야기를 나눠요."},
-    {id:"ra2",type:`오프라인 · ${work}`,title:"팬 전시 관람 동행",date:"03",month:"10월",time:"10월 3일 · 오후 2:00",count:"5 / 8명",desc:"공개된 장소에서 만나 함께 관람하고 감상을 기록해요."}
-  ];
-  const goods=[
-    {id:"rg1",type:"판매",title:`${work} 아크릴 스탠드 미개봉`,price:"24,000원",seller:"모카별",status:"판매 중"},
-    {id:"rg2",type:"교환",title:`${work} 특전 포토카드 교환`,price:"교환",seller:"윤슬",status:"교환 중"}
-  ];
+  const activities: {id:string;type:string;title:string;date:string;month:string;time:string;count:string;desc:string}[]=[];
+  const goods: {id:string;type:string;title:string;price:string;seller:string;status:string}[]=[];
   useEffect(()=>{if(initialPostId)setSelectedPostId(initialPostId)},[initialPostId]);
   useEffect(()=>{setFanworkPosts(makeFanworkPosts(work,boardName))},[boardName,work]);
   useEffect(()=>{try{const stored=localStorage.getItem(`chwihyang-secret-rooms:${boardName}`);setSecretRooms(stored?JSON.parse(stored) as SecretRoom[]:[])}catch{setSecretRooms([])}setSecretRoomToEnter(null);setUnlockedSecretRoom(null)},[boardName]);
@@ -79,7 +67,7 @@ export function FandomRoomView({boardName,communities,joined,onSelect,join,requi
         {!visiblePosts.length&&<p className="empty-state">이 분류에는 아직 글이 없어요. 첫 기록을 남겨보세요.</p>}
       </TabsContent>
       <TabsContent value="fanwork" className="fanwork-panel"><div className="inside-board-head"><div><h2>2차창작</h2><p className="fanwork-intro">이 커뮤니티의 원작을 바탕으로 만든 팬아트, 팬픽·글, 코스프레, 커버·리믹스를 나눠요.</p></div><button className="primary" onClick={write}><Plus/> 창작 올리기</button></div><div className="post-category-filter" aria-label="2차창작 분류">{(["인기글","팬아트","팬픽·글","코스프레","커버·리믹스"] as FanworkFilter[]).map(name=><button aria-pressed={fanworkKind===name} className={fanworkKind===name?"active":""} onClick={()=>setFanworkKind(name)} key={name}>{name}</button>)}</div><div className="inside-board-list fanwork-board-list"><div className="inside-cols"><span>분류</span><span>제목</span><span>작성자</span><span>시간</span><span>댓글</span><span>좋아요</span></div>{visibleFanworkPosts.map(post=><button key={post.id} onClick={()=>setSelectedPostId(post.id)}><span className="kind">{post.kind}</span><b>{post.title}</b><span className="author-profile-link" onClick={event=>{event.stopPropagation();openProfile(post.author)}}>{post.author}</span><time>{post.time}</time><span>{post.comments}</span><span>{post.likes}</span></button>)}</div>{!visibleFanworkPosts.length&&<p className="empty-state">이 분류에는 아직 창작물이 없어요. 첫 작품을 올려보세요.</p>}</TabsContent>
-      <TabsContent value="members"><div className="room-members">{["파란귤","모카별","윤슬","고래구름"].map((name,i)=><div key={name}><button className="member-profile" onClick={()=>openProfile(name)}><span>{name[0]}</span><span><b>{name}</b><small>{i===0?"운영자":"공통 작품 2개"}</small></span></button><button className="outline" onClick={()=>requireLogin(()=>toast.success(`${name}님에게 친구 요청을 보냈어요`))}>친구 요청</button></div>)}</div></TabsContent>
+      <TabsContent value="members"><p className="empty-state">아직 다른 멤버가 없어요.</p></TabsContent>
       <TabsContent value="chat"><div className="room-feature-link"><MessageCircle/><div><h2>{boardName} 단체 대화</h2><p>친구 대화와 분리된 이 커뮤니티 전용 톡방으로 이동합니다.</p><small>현재 커뮤니티가 선택된 상태로 열려요.</small></div><button className="primary" onClick={()=>requireLogin(()=>openMessages(boardName))}>대화 참여</button></div><section className="secret-room-list"><div><h2>비밀방</h2><p>비밀번호를 아는 멤버만 방의 글을 읽을 수 있어요.</p></div>{secretRooms.length?<div className="secret-room-items">{secretRooms.map(room=><button key={room.id} onClick={()=>requireLogin(()=>setSecretRoomToEnter(room))}><Shield/><span><b>{room.name}</b><small>{room.description}</small></span><em>비밀번호</em></button>)}</div>:<button className="secret-room-empty" onClick={openSecretRoomComposer}>아직 비밀방이 없어요. 비밀방 만들기</button>}</section></TabsContent>
     </Tabs>
     <PostDetail post={selectedPost} navigationPosts={selectedPost&&fanworkPosts.some(post=>post.id===selectedPost.id)?fanworkPosts:roomPosts} onNavigate={setSelectedPostId} onClose={()=>{setSelectedPostId(null);onPostDetailClose?.()}} onToggleLike={id=>fanworkPosts.some(post=>post.id===id)?requireLogin(()=>toggleFanworkPost(id,"liked")):onTogglePost(id,"liked")} onToggleSave={id=>fanworkPosts.some(post=>post.id===id)?requireLogin(()=>toggleFanworkPost(id,"saved")):onTogglePost(id,"saved")} onOpenProfile={openProfile} requireLogin={requireLogin}/>
