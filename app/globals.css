@@ -858,7 +858,7 @@ html[data-theme="dark"] .joined-community-section header p{color:#aebdca}
 .community-create-entry{display:flex;justify-content:flex-end;max-width:1320px;margin:-2px auto 18px;padding:0 24px}.community-create-entry .primary{display:inline-flex;align-items:center;gap:7px}.community-create-dialog form{display:grid;gap:14px;margin-top:8px}.community-create-dialog label{display:grid;gap:7px;color:var(--ink);font-weight:700}.community-create-dialog select{height:42px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--ink);padding:0 12px;font:inherit}.community-create-dialog textarea{min-height:106px;resize:vertical}.community-create-dialog form>.primary{justify-content:center;margin-top:4px}@media(max-width:820px){.community-create-entry{padding:0 14px;margin-bottom:14px}.community-create-entry .primary{width:100%;justify-content:center}}
 .fresh-discover .discover-step-panel{display:grid;gap:18px;margin-top:18px}
 .community-create-entry{display:none}
-.fresh-discover .discover-step-panel .discovery-step{margin:0;padding:18px 22px;border:1px solid #86aabd;border-radius:24px;background:#e7f0f5;box-shadow:0 2px 7px rgba(44,84,107,.12)}
+.fresh-discover .discover-step-panel .discovery-step{margin:0;padding:18px 22px;border:1px solid #86aabd;border-radius:24px;background:#e7f0f5!important;box-shadow:0 2px 7px rgba(44,84,107,.12)}
 .fresh-discover .discover-step-panel .category-grid,.fresh-discover .discover-step-panel .room-list{border:1px solid #86aabd;border-radius:24px;background:#fffefa;box-shadow:0 2px 7px rgba(44,84,107,.12)}
 .fresh-discover .discover-step-panel .category-grid button{background:#fffefa}
 
