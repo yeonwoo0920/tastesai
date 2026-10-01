@@ -330,7 +330,7 @@ html[data-theme="dark"] .home-heading,html[data-theme="dark"] .page-title,html[d
 
 /* 시간과 날씨를 독립적으로 조합하는 픽셀 풍경 */
 .weather-ambient{background:linear-gradient(180deg,var(--sky-top,#5bb0df) 0%,var(--sky-bottom,#d2edf3) 76%,color-mix(in srgb,var(--sky-bottom,#d2edf3) 74%,#fff) 100%)}.weather-ambient.background-mood{transition:background 90s linear}
-.weather-ambient.background-light{background:linear-gradient(180deg,#a8d5ed 0%,#d1e6e7 48%,#f4f0e2 100%)!important}.weather-ambient.background-solid{background:var(--solid-background)!important}.weather-ambient.background-light .ambient-sky,.weather-ambient.background-solid .ambient-sky,.weather-ambient.background-light .ambient-glow,.weather-ambient.background-solid .ambient-glow,.weather-ambient.background-light .ambient-horizon,.weather-ambient.background-solid .ambient-horizon,.weather-ambient.background-light .ambient-particles,.weather-ambient.background-solid .ambient-particles{display:none}.solid-background-picker{display:flex;align-items:center;justify-content:space-between;padding:10px 6px;color:#657789;font-family:var(--system-font);font-size:12px}.solid-background-picker input{width:42px;height:28px;padding:2px;border:1px solid #b9c7d2;background:#fff}
+.weather-ambient.background-solid{background:var(--solid-background)!important}.weather-ambient.background-solid .ambient-sky,.weather-ambient.background-solid .ambient-glow,.weather-ambient.background-solid .ambient-horizon,.weather-ambient.background-solid .ambient-particles{display:none}.solid-background-picker{display:flex;align-items:center;justify-content:space-between;padding:10px 6px;color:#657789;font-family:var(--system-font);font-size:12px}.solid-background-picker input{width:42px;height:28px;padding:2px;border:1px solid #b9c7d2;background:#fff}
 .ambient-sky{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 5px);transition:background 90s linear}.ambient-glow{background:radial-gradient(circle at 79% 16%,color-mix(in srgb,var(--sky-glow,#fff1bd) 82%,transparent) 0 4%,color-mix(in srgb,var(--sky-glow,#fff1bd) 38%,transparent) 5% 12%,transparent 28%);transition:background 90s linear}.ambient-horizon{position:absolute;left:0;right:0;bottom:0;height:27%;opacity:.18;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--sky-glow,#fff) 55%,transparent))}
 .time-night .ambient-glow:after{content:"";position:absolute;right:11%;top:9%;width:64px;height:64px;border-radius:50%;background:#f4f2dc;box-shadow:0 0 0 9px rgba(228,235,245,.14),0 0 32px rgba(238,242,249,.28)}.time-night .ambient-sky{background-image:radial-gradient(#fff 1px,transparent 1px),radial-gradient(#9eb4d8 1px,transparent 1px);background-size:67px 67px,43px 43px;background-position:7px 13px,21px 5px}
 .weather-clear:not(.time-night) .ambient-particles i,.weather-cloudy:not(.time-night) .ambient-particles i{width:46px;height:13px;border-radius:0;background:#f8fbfc;opacity:.72;box-shadow:-12px 5px 0 #f8fbfc,13px 4px 0 #dfeaf0,4px -7px 0 #f8fbfc,20px 8px 0 #cbdde7;image-rendering:pixelated;animation:ambient-cloud 48s linear infinite}.weather-cloudy:not(.time-night) .ambient-particles i{opacity:.52;filter:saturate(.45)}
@@ -850,30 +850,6 @@ html[data-ambient-time="sunset"] {
 html[data-ambient-time="night"] {
   --stage-bg: #65799c;
   --stage-border: #455b7d;
-}
-
-/* 기본 배경은 시간대와 무관하게 밝은 종이판으로 유지한다. */
-html[data-background-mode="light"] {
-  --stage-bg: #d3e8f1;
-  --stage-border: #89aabd;
-  --ambient-panel: #fffefa;
-  --ambient-panel-strong: #fffefa;
-  --ambient-title: #d8e9f2;
-  --ambient-edge: #9eb9ca;
-  --ambient-divider: #c9dce6;
-}
-
-html[data-background-mode="light"] .home-heading,
-html[data-background-mode="light"] .my-community-zone,
-html[data-background-mode="light"] .record-zone,
-html[data-background-mode="light"] .hot-rail {
-  border: 1px solid #9fbccc !important;
-  box-shadow: 0 9px 22px rgba(72, 125, 156, .16) !important;
-}
-
-html[data-background-mode="light"] .page-wrap {
-  border: 1px solid #91b2c5 !important;
-  box-shadow: 0 10px 30px rgba(68, 116, 145, .14) !important;
 }
 
 /*
