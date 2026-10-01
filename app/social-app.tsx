@@ -18,6 +18,7 @@ import { WeatherAmbient } from "./weather-ambient";
 type Viewer = { id: string; name: string; email: string } | null;
 type View = "home" | "discover" | "mine" | "fanwork" | "activities" | "market" | "messages" | "notifications" | "profile" | "person" | "more";
 type Post = { id: string; title: string; author: string; handle: string; avatar: string; community: string; kind: string; body: string; time: string; image?: string; likes: number; comments: number; tags: string[]; liked?: boolean; saved?: boolean; spoiler?:boolean; warning?:string; mine?: boolean };
+type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
 
 const categories = [
   ["영화·드라마", "영화 · 드라마 · OTT", Clapperboard, "#edf2f8"], ["애니·만화", "애니 · 만화 · 웹툰", Sparkles, "#f3f0eb"], ["아이돌·음악", "아이돌 · 밴드 · 공연", Music2, "#f2eef4"], ["게임", "콘솔 · PC · 모바일", Gamepad2, "#edf1f7"], ["소설·독서", "소설 · 작가 · 등장인물", BookOpen, "#eef3ed"], ["배우·성우", "배우 · 성우 · 크리에이터", UserRound, "#f4f1ed"], ["2차창작", "팬아트 · 팬픽 · 코스프레", Palette, "#f0eff5"],
@@ -55,6 +56,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   const [error, setError] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [loginPromptOpen,setLoginPromptOpen] = useState(false);
+  const [profile,setProfile] = useState<ProfileDetails>(() => ({name:user?.name||"",intro:"이야기가 오래 남는 작품과 인물을 천천히 기록해요.",status:"오늘도 좋아하는 것을 오래 보기",tags:["프리렌","듄","원신","데미안"]}));
   const hydrated = useRef(false);
   useEffect(()=>{window.scrollTo({top:0,behavior:"instant"});},[view]);
   const requireLogin = (action: () => void) => user ? action() : setLoginPromptOpen(true);
@@ -86,11 +88,12 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
 
   useEffect(() => {
     if (!user) return;
-    fetch("/api/state").then(r => r.json() as Promise<{state?:{joined?:string[];selectedBoard?:string;posts?:Record<string,Partial<Post>>}|null}>).then(({state}) => {
+    fetch("/api/state").then(r => r.json() as Promise<{state?:{joined?:string[];selectedBoard?:string;posts?:Record<string,Partial<Post>>;profile?:ProfileDetails}|null}>).then(({state}) => {
       if (state?.joined) { const migrated=(state.joined as string[]).map(name=>name==="이번 분기 애니 정주행"?communities[0].name:name==="매일 20분 독서"?communities[1].name:name).filter(name=>communities.some(c=>c.name===name)); setJoined(migrated); }
       if (state?.selectedBoard && communities.some(c=>c.name===state.selectedBoard)) setSelectedBoard(state.selectedBoard);
       const savedPosts = state?.posts;
       if (savedPosts) setPosts((current: Post[]) => current.map(p => savedPosts[p.id] ? {...p,...savedPosts[p.id]} : p));
+      if (state?.profile?.name) setProfile(state.profile);
       hydrated.current = true;
     }).catch(() => { hydrated.current = true; toast.error("저장된 정보를 불러오지 못했어요") });
   }, [user]);
@@ -99,10 +102,12 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
     if (!user || !hydrated.current) return;
     const id = setTimeout(() => {
       const reactions = Object.fromEntries(posts.map(p => [p.id, {liked:p.liked,saved:p.saved,likes:p.likes}]));
-      fetch("/api/state", {method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({joined,selectedBoard,posts:reactions})}).catch(()=>toast.error("변경 사항을 저장하지 못했어요"));
+      fetch("/api/state", {method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({joined,selectedBoard,posts:reactions,profile})}).catch(()=>toast.error("변경 사항을 저장하지 못했어요"));
     }, 500);
     return () => clearTimeout(id);
-  }, [joined, selectedBoard, posts, user]);
+  }, [joined, selectedBoard, posts, profile, user]);
+
+  const profileUser = user ? {...user,name:profile.name||user.name} : null;
 
   const filteredCommunities = useMemo(() => communities.filter(c => (c.name+c.cat+c.desc).toLowerCase().includes(search.toLowerCase())), [search]);
   const togglePost = (id:string, key:"liked"|"saved") => requireLogin(() => setPosts(p => p.map(x => x.id===id ? {...x,[key]:!x[key], likes:key==="liked" ? x.likes+(x.liked?-1:1) : x.likes} : x)));
@@ -117,12 +122,12 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       <div className="top-actions">
         <IconNav id="messages" label="대화" icon={MessageCircle} count={3} active={view==="messages"} onClick={next=>requireLogin(()=>{setMessageCommunity(null);setView(next)})}/>
         <IconNav id="notifications" label="알림" icon={Bell} count={notificationRead?0:4} active={view==="notifications"} onClick={next=>requireLogin(()=>setView(next))}/>
-        {user ? <button className="mini-profile" onClick={()=>setView("profile")}><Avatar text={user.name}/><span>{user.name}</span></button> : <a className="login" href={signInPath} target="_top">로그인</a>}
+        {profileUser ? <button className="mini-profile" onClick={()=>setView("profile")}><Avatar text={profileUser.name}/><span>{profileUser.name}</span></button> : <a className="login" href={signInPath} target="_top">로그인</a>}
       </div>
     </header>
 
     <main className="page-wrap">
-      {view==="home" && <CommunityHome user={user} posts={posts} feed={feed} setFeed={setFeed} setView={setView} openBoard={name=>{setSelectedBoard(name);setView("mine")}} openCommunityPost={post=>{setSelectedBoard(post.community);setPostToOpen(post.id);setView("mine")}} openProfile={name=>{setSelectedPerson(name);setView("person")}} togglePost={togglePost} requireLogin={requireLogin} joined={joined} join={join}/>}
+      {view==="home" && <CommunityHome user={profileUser} posts={posts} feed={feed} setFeed={setFeed} setView={setView} openBoard={name=>{setSelectedBoard(name);setView("mine")}} openCommunityPost={post=>{setSelectedBoard(post.community);setPostToOpen(post.id);setView("mine")}} openProfile={name=>{setSelectedPerson(name);setView("person")}} togglePost={togglePost} requireLogin={requireLogin} joined={joined} join={join}/>} 
       {view==="discover" && <DiscoverView search={search} setSearch={setSearch} communities={communities} joined={joined} join={join} openBoard={name=>{setSelectedBoard(name);setView("mine")}}/>}
       {view==="mine" && <FandomRoomView key={selectedBoard}
         boardName={selectedBoard} communities={communities} joined={joined} onSelect={setSelectedBoard}
@@ -132,14 +137,14 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       />}
       {view==="activities" && <ActivitiesView requireLogin={requireLogin} openComposer={()=>{setComposerKind("잡담");setComposerOpen(true)}} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
       {view==="market" && <MarketplaceView requireLogin={requireLogin} setView={setView} openProfile={name=>{setSelectedPerson(name);setView("person")}}/>}
-      {view==="messages" && <MessagesView key={messageCommunity||"friends"} user={user} joined={joined} requireLogin={requireLogin} initialCommunityName={messageCommunity}/>}
+      {view==="messages" && <MessagesView key={messageCommunity||"friends"} user={profileUser} joined={joined} requireLogin={requireLogin} initialCommunityName={messageCommunity}/>} 
       {view==="notifications" && <NotificationsView setView={setView} read={notificationRead} markRead={()=>setNotificationRead(true)}/>}
-      {view==="profile" && <FandomProfile openSection={section=>setView(section)} joinedCount={joined.length} posts={posts} user={user} signInPath={signInPath} signOutPath={signOutPath} openMessages={()=>{setMessageCommunity(null);setView("messages")}}/>}
+      {view==="profile" && <FandomProfile openSection={section=>setView(section)} joinedCount={joined.length} posts={posts} user={profileUser} profile={profile} onSaveProfile={setProfile} signInPath={signInPath} signOutPath={signOutPath} openMessages={()=>{setMessageCommunity(null);setView("messages")}}/>} 
       {view==="person" && <FandomPublicProfile name={selectedPerson} openMessages={()=>requireLogin(()=>setView("messages"))} requireLogin={requireLogin}/>}
       {view==="more" && <MoreView setView={setView}/>}
     </main>
     <nav className="mobile-nav" aria-label="모바일 메뉴">{nav.filter(([id])=>["home","discover","messages","profile","more"].includes(id)).map(([id,label,Icon,count])=><button key={id} aria-current={view===id?"page":undefined} className={view===id?"active":""} onClick={()=>["messages","profile"].includes(id)?requireLogin(()=>{if(id==="messages")setMessageCommunity(null);setView(id)}):setView(id)}><span><Icon/>{count&&<i>{count}</i>}</span><small>{label.replace("커뮤니티","탐색").replace("마이페이지","MY")}</small></button>)}</nav>
-    <FandomComposer key={`${selectedBoard}-${composerKind}`} initialKind={composerKind} boardName={selectedBoard} open={composerOpen} setOpen={setComposerOpen} user={user} onAdd={post=>{setPosts(p=>[post,...p]);setComposerOpen(false);toast.success(`${post.community} 커뮤니티에 글을 올렸어요`);}}/>
+    <FandomComposer key={`${selectedBoard}-${composerKind}`} initialKind={composerKind} boardName={selectedBoard} open={composerOpen} setOpen={setComposerOpen} user={profileUser} onAdd={post=>{setPosts(p=>[post,...p]);setComposerOpen(false);toast.success(`${post.community} 커뮤니티에 글을 올렸어요`);}}/>
     <Dialog open={loginPromptOpen} onOpenChange={setLoginPromptOpen}><DialogContent className="login-required-dialog"><DialogHeader><DialogTitle>로그인이 필요한 기능이에요</DialogTitle></DialogHeader><p>취향사이에 로그인하고 함께 이야기해보세요.</p><div><button className="outline" type="button" onClick={()=>setLoginPromptOpen(false)}>취소</button><a className="primary" href={signInPath} target="_top">로그인</a><a className="outline" href={signInPath} target="_top">회원가입</a></div></DialogContent></Dialog>
   </div>;
 }

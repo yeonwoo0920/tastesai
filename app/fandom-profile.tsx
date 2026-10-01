@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 type Viewer = { id:string; name:string; email:string } | null;
 type ProfileTab = "home" | "diary" | "records";
-type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
+export type ProfileDetails = { name:string; intro:string; status:string; tags:string[] };
 type ProfilePost = { id:string; title:string; body:string; community:string; kind:string; time:string; comments:number; author:string; likes?:number; liked?:boolean; saved?:boolean; mine?:boolean };
 type RoomSettings = { backgroundImage:string; backgroundPosition:"top"|"center"|"bottom"; homeTitle:string; roomLabel:string; roomTitle:string; roomDescription:string; textTone:"light"|"dark"; overlayStyle:"none"|"light"|"dark" };
 
@@ -25,7 +25,7 @@ const records = [
   { work:"데미안", kind:"문장 수집", date:"2026.09.14" },
 ];
 
-export function FandomProfile({user,signInPath,signOutPath,openMessages,openSection,joinedCount,posts}:{user:Viewer;signInPath:string;signOutPath:string;openMessages:()=>void;openSection:(section:"mine"|"activities"|"market")=>void;joinedCount:number;posts:ProfilePost[]}) {
+export function FandomProfile({user,profile,onSaveProfile,signInPath,signOutPath,openMessages,openSection,joinedCount,posts}:{user:Viewer;profile:ProfileDetails;onSaveProfile:(profile:ProfileDetails)=>void;signInPath:string;signOutPath:string;openMessages:()=>void;openSection:(section:"mine"|"activities"|"market")=>void;joinedCount:number;posts:ProfilePost[]}) {
   const [decorating,setDecorating]=useState(false);
   const [activeTab,setActiveTab]=useState<ProfileTab>("home");
   const [editing,setEditing]=useState(false);
@@ -40,15 +40,13 @@ export function FandomProfile({user,signInPath,signOutPath,openMessages,openSect
   const [room,setRoom]=useState<RoomSettings>(initialRoom);
   const [roomDraft,setRoomDraft]=useState<RoomSettings>(initialRoom);
   const [roomError,setRoomError]=useState("");
-  const defaultProfile:ProfileDetails={name:user?.name||"",intro:"이야기가 오래 남는 작품과 인물을 천천히 기록해요.",status:"오늘도 좋아하는 것을 오래 보기",tags:["프리렌","듄","원신","데미안"]};
-  const [profile,setProfile]=useState<ProfileDetails>(defaultProfile);
-  const [draft,setDraft]=useState<ProfileDetails>(defaultProfile);
+  const [draft,setDraft]=useState<ProfileDetails>(profile);
   const openDecor=()=>{setRoomDraft(room);setRoomError("");setDecorating(true)};
   const cancelDecor=()=>{setRoomDraft(room);setRoomError("");setDecorating(false)};
   const saveDecor=()=>{try{localStorage.setItem("mini-home-style",JSON.stringify({accent,pattern,frame}));localStorage.setItem("mini-home-room",JSON.stringify(roomDraft));setRoom(roomDraft);setDecorating(false);toast.success("내 덕질방 꾸미기를 저장했어요")}catch{setRoomError("브라우저 저장 공간이 부족해요. 더 작은 사진을 선택해 주세요.")}};
   const pickRoomImage=(file?:File)=>{if(!file)return;setRoomError("");if(!["image/jpeg","image/png","image/webp"].includes(file.type)){setRoomError("JPG, PNG, WebP 이미지만 사용할 수 있어요.");return;}if(file.size>5_000_000){setRoomError("배경 이미지는 5MB 이하로 선택해 주세요.");return;}const objectUrl=URL.createObjectURL(file);const image=new Image();image.onload=()=>{const scale=Math.min(1,1600/image.width,900/image.height);const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));canvas.getContext("2d")?.drawImage(image,0,0,canvas.width,canvas.height);const backgroundImage=canvas.toDataURL("image/webp",.82);URL.revokeObjectURL(objectUrl);if(backgroundImage.length>1_200_000){setRoomError("압축 후에도 이미지가 너무 커요. 더 작은 사진을 선택해 주세요.");return;}setRoomDraft(value=>({...value,backgroundImage}));};image.onerror=()=>{URL.revokeObjectURL(objectUrl);setRoomError("이미지를 불러오지 못했어요.")};image.src=objectUrl};
   const openProfileEditor=()=>{setDraft({...profile,tags:[...profile.tags]});setEditing(true)};
-  const saveProfile=(event:FormEvent)=>{event.preventDefault();const name=draft.name.trim();if(!name){toast.error("표시 이름을 입력해 주세요");return;}setProfile({...draft,name,tags:draft.tags.filter(Boolean)});setEditing(false);toast.success("프로필을 저장했어요")};
+  const saveProfile=(event:FormEvent)=>{event.preventDefault();const name=draft.name.trim();if(!name){toast.error("표시 이름을 입력해 주세요");return;}onSaveProfile({...draft,name,tags:draft.tags.filter(Boolean)});setEditing(false);toast.success("프로필을 저장했어요")};
   if(!user) return <div className="single-page profile-login"><h1>나만의 덕질 기록을 모아보세요</h1><p>로그인하면 최애 작품, 커뮤니티, 기록과 친구를 한곳에서 관리할 수 있어요.</p><a className="primary" href={signInPath} target="_top">로그인 / 회원가입</a></div>;
   const items=[[Users,"가입한 커뮤니티",`${joinedCount}개`],[BookOpen,"내가 쓴 글","8개"],[CalendarDays,"참여 중인 활동","2개"],[ShoppingBag,"거래 중인 굿즈","1개"]] as const;
   const myPosts=posts.filter(post=>post.mine||post.author===user.name);
