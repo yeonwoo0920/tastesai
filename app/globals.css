@@ -858,7 +858,7 @@ html[data-background-mode="light"] {
   --stage-border: #7f9fb2;
   --ambient-panel: #fffefa;
   --ambient-panel-strong: #fffefa;
-  --ambient-title: #e6f3f8;
+  --ambient-title: #d8e9f2;
   --ambient-edge: #9eb9ca;
   --ambient-divider: #c9dce6;
 }
@@ -1348,9 +1348,9 @@ html[data-theme="dark"] .notification-list {
 .discover-page .discovery-step {
   background: linear-gradient(
     135deg,
-    #bddbea 0%,
-    #cfe5f0 55%,
-    #dce9f1 100%
+    #cbe1eb 0%,
+    #d9e9f1 55%,
+    #e3edf3 100%
   ) !important;
 }
 
