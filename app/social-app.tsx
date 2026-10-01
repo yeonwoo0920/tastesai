@@ -40,7 +40,7 @@ const communities = seedCommunities;
 
 const seedPosts: Post[] = [];
 
-const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["mine","내 커뮤니티",Users],["discover","탐색",Compass],["activities","함께하는 활동",CalendarDays],["market","굿즈 거래소",Bookmark],["messages","대화",MessageCircle,3],["notifications","알림",Bell,4],["profile","마이페이지",UserRound],["more","더보기",MoreHorizontal]];
+const nav: [View,string,typeof Home,number?][] = [["home","홈",Home],["mine","내 커뮤니티",Users],["discover","탐색",Compass],["activities","함께하는 활동",CalendarDays],["market","굿즈 거래소",Bookmark],["messages","대화",MessageCircle],["notifications","알림",Bell],["profile","마이페이지",UserRound],["more","더보기",MoreHorizontal]];
 
 export default function SocialApp({ user, signInPath, signOutPath }: { user: Viewer; signInPath: string; signOutPath: string }) {
   const [view, setView] = useState<View>("home");
@@ -50,7 +50,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
   const [search, setSearch] = useState("");
   const [feed, setFeed] = useState("최신 글");
   const [composerKind,setComposerKind]=useState("잡담");
-  const [notificationRead,setNotificationRead]=useState(false);
+  const [notificationRead,setNotificationRead]=useState(true);
   const [selectedBoard, setSelectedBoard] = useState<string>("");
   const [postToOpen, setPostToOpen] = useState<string|null>(null);
   const [selectedPerson, setSelectedPerson] = useState("");
@@ -148,8 +148,8 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       <label className="top-search"><Search size={19}/><input value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&setView("discover")} placeholder="작품, 인물, 캐릭터 검색" aria-label="작품과 인물 검색"/></label>
       <WeatherAmbient/>
       <div className="top-actions">
-        <IconNav id="messages" label="대화" icon={MessageCircle} count={3} active={view==="messages"} onClick={next=>requireLogin(()=>{setMessageCommunity(null);setView(next)})}/>
-        <IconNav id="notifications" label="알림" icon={Bell} count={notificationRead?0:4} active={view==="notifications"} onClick={next=>requireLogin(()=>setView(next))}/>
+        <IconNav id="messages" label="대화" icon={MessageCircle} count={0} active={view==="messages"} onClick={next=>requireLogin(()=>{setMessageCommunity(null);setView(next)})}/>
+        <IconNav id="notifications" label="알림" icon={Bell} count={0} active={view==="notifications"} onClick={next=>requireLogin(()=>setView(next))}/>
         {profileUser ? <button className="mini-profile" onClick={()=>setView("profile")}><Avatar text={profileUser.name}/><span>{profileUser.name}</span></button> : <a className="login" href={signInPath} target="_top">로그인</a>}
       </div>
     </header>
