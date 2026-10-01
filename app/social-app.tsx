@@ -35,6 +35,7 @@ const categories = [
 
 const seedCommunities: Community[] = [];
 const legacyCommunityNames = new Set(["프리렌 회차 감상방","듄 원작·영화 비교방","원신 세계관 정리방","데미안 문장 수집방"]);
+const legacyProfileTerms = ["프리렌","듄","원신","데미안","하야미"];
 
 const communities = seedCommunities;
 
@@ -111,7 +112,7 @@ export default function SocialApp({ user, signInPath, signOutPath }: { user: Vie
       if (state?.selectedBoard&&!legacyCommunityNames.has(state.selectedBoard)) setSelectedBoard(state.selectedBoard);
       const savedPosts = state?.posts;
       if (savedPosts) setPosts((current: Post[]) => current.map(p => savedPosts[p.id] ? {...p,...savedPosts[p.id]} : p));
-      if (state?.profile?.name) setProfile(state.profile);
+      if (state?.profile?.name) { const savedProfile=state.profile; const containsLegacy=legacyProfileTerms.some(term=>`${savedProfile.intro} ${savedProfile.status} ${(savedProfile.tags||[]).join(" ")}`.includes(term)); setProfile(containsLegacy?{name:savedProfile.name,intro:"",status:"",tags:[]}:savedProfile); }
       hydrated.current = true;
     }).catch(() => { hydrated.current = true; toast.error("저장된 정보를 불러오지 못했어요") });
   }, [user]);
